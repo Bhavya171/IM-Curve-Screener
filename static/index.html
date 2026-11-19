@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Spread Screener</title>
+<title>IM Curve Screener</title>
 <style>
   :root {
     --bg: #f4f5f7; --card: #ffffff; --ink: #1d2330; --muted: #6b7280; --line: #e3e6eb;
@@ -100,17 +100,72 @@
   .cp-tip .r i { width: 10px; height: 3px; border-radius: 2px; display: inline-block; }
   .cp-tip .r span:last-child { margin-left: auto; padding-left: 12px; }
   .cp-foot { color: var(--muted); font-size: 11px; padding: 0 14px 8px; }
+
+  /* ---------- tabs ---------- */
+  .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 14px; }
+  .topbar h1 { font-size: 18px; font-weight: 700; margin: 0; }
+  .tabs { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; background: var(--card); }
+  .tabs button { font: inherit; font-weight: 600; color: var(--muted); background: none; border: 0; border-radius: 6px;
+                 padding: 6px 14px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--head); color: var(--ink); }
+  .topbar .grow { flex: 1 1 auto; }
+  body[data-tab="sim"] .cp { display: none !important; }
+
+  /* ---------- curve simulator ---------- */
+  .btn { font: inherit; font-size: 12px; color: var(--ink); background: var(--card); border: 1px solid var(--line);
+         border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+  .btn:hover { background: var(--head); }
+  .sim-mk { margin-top: 14px; }
+  .sim-mk:first-of-type { margin-top: 0; }
+  .sim-mk h3 { font-size: 14px; margin: 0; flex: 1 1 auto; }
+  .sim-mk h3 small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+  table.sim-in td { padding: 3px 4px; text-align: center; }
+  table.sim-in th.fly { min-width: 64px; }
+  table.sim-in tr.dd th, table.sim-in tr.dd td { border-bottom: 2px solid var(--axis); }
+  table.sim-in tr.grp th { text-align: left; font-weight: 600; color: var(--muted); padding: 10px 4px 2px; border-bottom: 1px solid var(--line); }
+  .subtabs button { padding: 4px 12px; }
+  .subtabs button.off { color: var(--stale); font-weight: 400; }
+  .subtabs sup { font-size: 10px; color: var(--s1); margin-left: 2px; }
+  #simMsg { min-height: 16px; margin: 0 0 6px; color: var(--s1); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  input.si { width: 78px; font: inherit; font-variant-numeric: tabular-nums; text-align: right; color: var(--ink);
+             background: var(--card); border: 1px solid var(--line); border-radius: 5px; padding: 4px 6px; }
+  input.si:focus { outline: 2px solid var(--s1); outline-offset: -1px; }
+  input.si.pin { border-color: var(--s1); box-shadow: inset 0 0 0 1px var(--s1); font-weight: 700; }
+  input.si.adj { border-style: dashed; border-color: var(--s1); font-style: italic; }
+  input.si.nolive { color: var(--stale); }
+  input.si:disabled { color: var(--muted); background: transparent; border-color: transparent; }
+  .si-d { display: block; font-size: 10px; line-height: 13px; min-height: 13px; color: var(--muted); }
+  .si-d.up { color: rgb(var(--up)); } .si-d.down { color: rgb(var(--down)); }
+  .legend-key { display: inline-flex; align-items: center; gap: 6px; margin-right: 14px; }
+  .legend-key i { display: inline-block; width: 22px; height: 14px; border-radius: 4px; border: 1px solid var(--line); }
+  .legend-key i.pin { border: 2px solid var(--s1); }
+  .legend-key i.adj { border: 1px dashed var(--s1); }
+  .sp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr)); gap: 12px; }
+  .sp-card { border: 1px solid var(--line); border-radius: 8px; height: 330px; display: flex; flex-direction: column; min-width: 0; }
+  .sp-card .cp-title { padding: 8px 12px 0; flex: 0 0 auto; }
+  #tab-sim td.v { cursor: default; }
+  #tab-sim td.v:hover { outline: none; }
 </style>
 </head>
 <body>
 <main>
+  <header class="topbar">
+    <h1>IM Curve Screener</h1>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button role="tab" data-tab="screen" aria-selected="true">Screener</button>
+      <button role="tab" data-tab="sim" aria-selected="false">Curve simulator</button>
+    </nav>
+    <span class="grow"></span>
+    <span class="meta" id="updated">Waiting for data…</span>
+    <span class="pill wait" id="conn"><span class="dot"></span><span id="connText">Connecting</span></span>
+  </header>
   <div class="banner" id="banner"></div>
 
+  <div id="tab-screen" role="tabpanel">
   <section class="card">
     <div class="bar">
       <h2 id="boardTitle">Spread board</h2>
-      <span class="meta" id="updated">Waiting for data…</span>
-      <span class="pill wait" id="conn"><span class="dot"></span><span id="connText">Connecting</span></span>
       <label class="ctl">Spread
         <select id="tenor">
           <option value="3">3M</option><option value="6">6M</option>
@@ -168,6 +223,52 @@
       <span class="staleMin">30</span> minutes older than the freshest leg).
       Click any cell to chart that structure's curve for every market.</p>
   </section>
+  </div>
+
+  <div id="tab-sim" role="tabpanel" hidden>
+    <section class="card">
+      <div class="bar">
+        <h2>Curve simulator · inputs</h2>
+        <nav class="tabs subtabs" role="tablist" aria-label="Market" id="simMkTabs"></nav>
+        <span class="grow"></span>
+        <label class="ctl"><input type="checkbox" id="simFreeze"> Hold live reference</label>
+        <button class="btn" id="simReset">Reset to live</button>
+        <button class="btn" id="simResetAll">Reset all to live</button>
+      </div>
+      <p class="note" style="margin-top:0">
+        <span class="legend-key"><i></i>live (default, follows the market)</span>
+        <span class="legend-key"><i class="pin"></i>your input</span>
+        <span class="legend-key"><i class="adj"></i>moved to fit your inputs</span>
+        Each year column holds the Dec–Dec spread and every 3M spread, 3MF and 6MF starting in it (bp). Type any box and
+        the rest follow with the smallest change from live: a 3M spread moves just that spread (Dec–Dec becomes the new sum);
+        a Dec–Dec is shared equally by the 3M spreads you have not fixed; a fly moves its belly (3MF +2 → front spread +1,
+        back spread −1; 6MF +2 → front two 3M spreads +0.5 each, back two −0.5). Everything not typed stays changeable.
+        If a box is already decided by newer inputs, the oldest one in the clash is released.
+        Clear a box (or press Delete) to send it back to live. The small figure under each box is sim − live.
+        Pick a market above; the charts and tables below always show every market.
+      </p>
+      <p class="meta" id="simMsg" role="status"></p>
+      <div id="simInputs"></div>
+    </section>
+
+    <section class="card">
+      <div class="bar"><h2>Simulated curves</h2><span class="meta">solid = simulated · dashed = live · click a legend item to hide / show a market in every chart</span></div>
+      <div class="sp-grid" id="simCharts"></div>
+    </section>
+
+    <section class="card">
+      <div class="bar"><h2>Simulated structures</h2><span class="meta">values = simulated level (bp) · shading = sim − live (green = higher, red = lower) · hover for legs</span></div>
+      <h3 class="meta" style="margin:4px 0 6px">1Y calendar spreads</h3><div class="scroll"><table id="sim-cal1y"></table></div>
+      <h3 class="meta" style="margin:14px 0 6px">6M spreads</h3><div class="scroll"><table id="sim-sp6"></table></div>
+      <h3 class="meta" style="margin:14px 0 6px">3M spreads</h3><div class="scroll"><table id="sim-sp3"></table></div>
+      <h3 class="meta" style="margin:14px 0 6px">3M flies (3MF)</h3><div class="scroll"><table id="sim-fly3"></table></div>
+      <h3 class="meta" style="margin:14px 0 6px">6M flies (6MF)</h3><div class="scroll"><table id="sim-fly6"></table></div>
+      <h3 class="meta" style="margin:14px 0 6px">6MF − 2×3MF (same front)</h3><div class="scroll"><table id="sim-cust"></table></div>
+      <p class="note">The simulated curve keeps each market's first contract at its live price and rebuilds every later
+        contract from the 3M spreads, so every spread and fly here follows from your inputs. Live prices use the
+        Price setting on the Screener tab (mid or last trade). Tick "Hold live reference" to stop the live defaults moving while you work.</p>
+    </section>
+  </div>
 </main>
 
 
@@ -184,7 +285,7 @@ for (const k of ["tenor", "view", "basis"]) {
   el.addEventListener("change", () => {
     S[k] = k === "tenor" ? Number(el.value) : el.value;
     try { localStorage.setItem("spreadScreener", JSON.stringify(S)); } catch (e) {}
-    render(); drawCharts();
+    refresh();
   });
 }
 
@@ -208,6 +309,9 @@ function legPrice(l) {
   return null;
 }
 
+// What a leg's `settle` means in tooltips: the previous settlement (screener) or the live price (simulator).
+let TIP_REF = "settle";
+
 // Weighted combination of legs, in bp. Returns null when a leg or its price is missing.
 function combo(mk, legs, w, name) {
   if (legs.some(l => !l)) return null;
@@ -226,8 +330,11 @@ function combo(mk, legs, w, name) {
   const chg = settleOk ? Math.round((v - s) * 1e4) / 1e4 : null;
   const lines = legs.map((l, i) =>
     `${w[i] > 0 ? "+" : "−"}${Math.abs(w[i]) === 1 ? "" : Math.abs(w[i]) + "×"}${l.code}  ${fmtPx(ps[i].px)} ${ps[i].src}` +
-    `  (bid ${fmtPx(l.bid)} / ask ${fmtPx(l.ask)}, last ${fmtPx(l.last)} @ ${fmtT(l.trade_time)}, settle ${fmtPx(l.settle)})`);
-  const tip = `${name}\n${lines.join("\n")}\nNow ${fmt(v)} bp · settle ${settleOk ? fmt(s) : "—"} bp · change ${fmt(chg, true)} bp`;
+    (TIP_REF === "live" ? `  (live ${fmtPx(l.settle)})`
+      : `  (bid ${fmtPx(l.bid)} / ask ${fmtPx(l.ask)}, last ${fmtPx(l.last)} @ ${fmtT(l.trade_time)}, settle ${fmtPx(l.settle)})`));
+  const tip = TIP_REF === "live"
+    ? `${name}\n${lines.join("\n")}\nSim ${fmt(v)} bp · live ${settleOk ? fmt(s) : "—"} bp · sim − live ${fmt(chg, true)} bp`
+    : `${name}\n${lines.join("\n")}\nNow ${fmt(v)} bp · settle ${settleOk ? fmt(s) : "—"} bp · change ${fmt(chg, true)} bp`;
   return { v, chg, stale, tip };
 }
 
@@ -235,15 +342,15 @@ function cellHtml(id, label) {
   return `<td class="v" id="${id}">${label ? `<span class="lab">${label}</span>` : ""}<span class="num">—</span></td>`;
 }
 
-function paint(cells, scaleOf) {
+function paint(cells, scaleOf, view = S.view) {
   const chgs = cells.map(c => c.r && c.r.chg).filter(x => x != null).map(Math.abs);
   const scale = Math.max(scaleOf, ...chgs);
   for (const c of cells) {
     const td = document.getElementById(c.id);
     if (!td) continue;
     const r = c.r;
-    const val = !r ? null : S.view === "level" ? r.v : r.chg;
-    td.querySelector(".num").textContent = fmt(val, S.view === "chg");
+    const val = !r ? null : view === "level" ? r.v : r.chg;
+    td.querySelector(".num").textContent = fmt(val, view === "chg");
     td.classList.toggle("stale", !!(r && r.stale));
     td.title = r ? r.tip : "Contract not listed";
     if (r && r.chg != null && r.chg !== 0) {
@@ -262,6 +369,8 @@ const legsAt = (mk, y, m, offs) => ymsAt(y, m, offs).map(([yy, mm]) => find(mk, 
 
 // Structures built from month offsets off the front leg.
 const STRUCT = {
+  sp3:  { offs: [0, 3], w: [1, -1], floor: 1,
+          name: (y, m) => ymsAt(y, m, [0, 3]).map(([, mm]) => letter(mm)).join("") },
   sp6:  { offs: [0, 6], w: [1, -1], floor: 2,
           name: (y, m) => ymsAt(y, m, [0, 6]).map(([, mm]) => letter(mm)).join("") },
   fly3: { offs: [0, 3, 6], w: [1, -2, 1], floor: 1,
@@ -275,7 +384,7 @@ const STRUCT = {
 };
 
 // One row per market, S1..S12 = structure starting at each live quarterly in turn.
-function renderStrip(tableId, offs, w, floor, nameOf, markets) {
+function renderStrip(tableId, offs, w, floor, nameOf, markets, view = S.view) {
   const table = document.getElementById(tableId);
   const tSig = JSON.stringify([offs, markets.map(m => [m.key, m.error, m.legs.map(l => l.code)])]);
   const cells = [];
@@ -297,7 +406,7 @@ function renderStrip(tableId, offs, w, floor, nameOf, markets) {
   }
   html += "</tbody>";
   if (table.dataset.sig !== tSig) { table.innerHTML = html; table.dataset.sig = tSig; }
-  paint(cells, floor);
+  paint(cells, floor, view);
 }
 
 function render() {
@@ -385,7 +494,7 @@ function chartDef(key) {
              nameAt: (y, m) => { const [by, bm] = ymAdd(y, m, t); return `${lab(y, m)}–${lab(by, bm)}`; } };
   }
   const st = STRUCT[key];
-  const titles = { sp6: "6M spreads", fly3: "3M flies (3MF)", fly6: "6M flies (6MF)", cust: "6MF − 2×3MF (same front)" };
+  const titles = { sp3: "3M spreads", sp6: "6M spreads", fly3: "3M flies (3MF)", fly6: "6M flies (6MF)", cust: "6MF − 2×3MF (same front)" };
   return { title: titles[key], offs: st.offs, w: st.w, nameAt: (y, m) => `${st.name(y, m)} ${lab(y, m)}` };
 }
 // the 1Y Dec-Dec spread and the board share a chart only when the board is on 1Y
@@ -440,11 +549,36 @@ function makePanel(key) {
 
   el.addEventListener("pointerdown", () => raise(p));
   el.querySelector(".cp-x").addEventListener("click", () => closePanel(p));
+  attachPanelEvents(p);
+
+  let drag = null;
+  p.head.addEventListener("pointerdown", e => {
+    if (e.target.closest("button")) return;
+    const r = el.getBoundingClientRect();
+    drag = { sx: e.clientX, sy: e.clientY, ox: r.left, oy: r.top };
+    p.head.setPointerCapture(e.pointerId);
+  });
+  p.head.addEventListener("pointermove", e => {
+    if (!drag) return;
+    el.style.left = `${Math.min(Math.max(0, drag.ox + e.clientX - drag.sx), innerWidth - 80)}px`;
+    el.style.top = `${Math.min(Math.max(0, drag.oy + e.clientY - drag.sy), innerHeight - 40)}px`;
+  });
+  p.head.addEventListener("pointerup", () => { drag = null; });
+  return p;
+}
+
+// Legend toggles, hover crosshair and redraw-on-resize: shared by floating panels and simulator charts.
+function attachPanelEvents(p) {
   p.legend.addEventListener("click", e => {
     const b = e.target.closest("button[data-k]");
     if (!b || b.disabled) return;
     const k = b.dataset.k;
     p.hidden.has(k) ? p.hidden.delete(k) : p.hidden.add(k);
+    if (p.sim) {  // simulator charts share one hidden set
+      try { localStorage.setItem("simChartHidden", JSON.stringify([...p.hidden])); } catch (err) {}
+      SIM_PANELS.forEach(drawPanel);
+      return;
+    }
     lastHidden = [...p.hidden];
     try { localStorage.setItem("spreadChartHidden", JSON.stringify(lastHidden)); } catch (err) {}
     drawPanel(p);
@@ -461,21 +595,6 @@ function makePanel(key) {
   p.plot.addEventListener("mouseleave", () => { p.hoverT = null; p.mouse = null; drawPanel(p); });
   p.ro = new ResizeObserver(() => drawPanel(p));
   p.ro.observe(p.plot);
-
-  let drag = null;
-  p.head.addEventListener("pointerdown", e => {
-    if (e.target.closest("button")) return;
-    const r = el.getBoundingClientRect();
-    drag = { sx: e.clientX, sy: e.clientY, ox: r.left, oy: r.top };
-    p.head.setPointerCapture(e.pointerId);
-  });
-  p.head.addEventListener("pointermove", e => {
-    if (!drag) return;
-    el.style.left = `${Math.min(Math.max(0, drag.ox + e.clientX - drag.sx), innerWidth - 80)}px`;
-    el.style.top = `${Math.min(Math.max(0, drag.oy + e.clientY - drag.sy), innerHeight - 40)}px`;
-  });
-  p.head.addEventListener("pointerup", () => { drag = null; });
-  return p;
 }
 
 function closePanel(p) {
@@ -496,26 +615,36 @@ function drawCharts() {
 
 function drawPanel(p) {
   if (!data || !p.el.isConnected) return;
-  const def = chartDef(p.key), lvl = S.view === "level";
-  p.title.innerHTML = `${def.title}<small>${lvl ? "level" : "1-day change"} · bp · ${S.basis === "mid" ? "mid" : "last trade"}</small>`;
+  const def = chartDef(p.key), lvl = p.sim || S.view === "level";
+  p.title.innerHTML = p.sim
+    ? `${def.title}<small>bp · solid = sim · dashed = live</small>`
+    : `${def.title}<small>${lvl ? "level" : "1-day change"} · bp · ${S.basis === "mid" ? "mid" : "last trade"}</small>`;
   p.el.setAttribute("aria-label", `${def.title} chart`);
 
-  // one series per market (colour fixed by the market's position, so hiding one never repaints the rest)
-  const all = data.markets.map((mk, i) => ({
-    mk, color: `var(--s${i + 1})`,
-    pts: mk.error ? [] : mk.legs.slice(0, COLS).map(f => {
-      const legs = legsAt(mk, f.y, f.m, def.offs);
-      const r = legs.every(Boolean) ? combo(mk, legs, def.w, "") : null;
-      return { t: f.y * 12 + f.m - 1, v: r ? (lvl ? r.v : r.chg) : null, stale: r ? r.stale : false };
-    }).filter(pt => pt.v != null),
-  }));
+  // one series per market (colour fixed by the market's position, so hiding one never repaints the rest);
+  // simulator charts add each market's live curve as a dashed line in the same colour
+  const pointsOf = mk => mk.error ? [] : mk.legs.slice(0, COLS).map(f => {
+    const legs = legsAt(mk, f.y, f.m, def.offs);
+    const r = legs.every(Boolean) ? combo(mk, legs, def.w, "") : null;
+    return { t: f.y * 12 + f.m - 1, v: r ? (lvl ? r.v : r.chg) : null, stale: r ? r.stale : false };
+  }).filter(pt => pt.v != null);
+  const legendMarkets = p.sim ? SIM.live : data.markets;
+  const all = [];
+  legendMarkets.forEach((mk, i) => {
+    const color = `var(--s${i + 1})`;
+    if (p.sim) {
+      const sm = SIM.markets.find(x => x.key === mk.key);
+      all.push({ mk, color, label: `${mk.key} sim`, dash: false, pts: sm ? pointsOf(sm).map(pt => ({ ...pt, stale: false })) : [] });
+      all.push({ mk, color, label: `${mk.key} live`, dash: true, pts: pointsOf(mk) });
+    } else all.push({ mk, color, label: mk.key, dash: false, pts: pointsOf(mk) });
+  });
 
-  const lsig = all.map(s => s.mk.key + (s.mk.error ? "!" : "") + (p.hidden.has(s.mk.key) ? "h" : "")).join();
+  const lsig = legendMarkets.map(mk => mk.key + (mk.error ? "!" : "") + (p.hidden.has(mk.key) ? "h" : "")).join();
   if (p.legend.dataset.sig !== lsig) {
-    p.legend.innerHTML = all.map(s =>
-      `<button data-k="${s.mk.key}" aria-pressed="${!s.mk.error && !p.hidden.has(s.mk.key)}"` +
-      `${s.mk.error ? ` disabled title="${s.mk.error}"` : ` title="Click to hide / show ${s.mk.key}"`}>` +
-      `<span class="sw" style="background:${s.color}"></span>${s.mk.key}</button>`).join("");
+    p.legend.innerHTML = legendMarkets.map((mk, i) =>
+      `<button data-k="${mk.key}" aria-pressed="${!mk.error && !p.hidden.has(mk.key)}"` +
+      `${mk.error ? ` disabled title="${mk.error}"` : ` title="Click to hide / show ${mk.key}"`}>` +
+      `<span class="sw" style="background:var(--s${i + 1})"></span>${mk.key}</button>`).join("");
     p.legend.dataset.sig = lsig;
   }
 
@@ -561,6 +690,10 @@ function drawPanel(p) {
       d += (prev != null && pt.t - prev <= 3 ? "L" : "M") + X(pt.t).toFixed(1) + " " + Y(pt.v).toFixed(1);
       prev = pt.t;
     }
+    if (s.dash) {  // live reference: thin dashed line, no markers
+      g += `<path d="${d}" fill="none" style="stroke:${s.color}" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8"/>`;
+      continue;
+    }
     g += `<path d="${d}" fill="none" style="stroke:${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
     for (const pt of s.pts) {
       g += `<circle cx="${X(pt.t)}" cy="${Y(pt.v)}" r="${pt.t === p.hoverT ? 5 : 4}" stroke-width="2" ` +
@@ -568,12 +701,12 @@ function drawPanel(p) {
     }
   }
   // direct labels at the end of each line, nudged apart
-  const ends = vis.map(s => { const pt = s.pts[s.pts.length - 1]; return { k: s.mk.key, x: X(pt.t) + 8, y: Y(pt.v) }; })
+  const ends = vis.filter(s => !s.dash).map(s => { const pt = s.pts[s.pts.length - 1]; return { k: s.mk.key, x: X(pt.t) + 8, y: Y(pt.v) }; })
                   .sort((a, b) => a.y - b.y);
   for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
   for (const e of ends) g += `<text x="${e.x}" y="${e.y + 4}" font-size="11" font-weight="600" fill="var(--ink2)">${e.k}</text>`;
 
-  p.svg.setAttribute("aria-label", `${def.title} curve for ${vis.map(s => s.mk.key).join(", ")}`);
+  p.svg.setAttribute("aria-label", `${def.title} curve for ${[...new Set(vis.map(s => s.mk.key))].join(", ")}`);
   p.svg.innerHTML = g;
   p.geom = { ts, X, vis, def, lvl };
   updateTip(p);
@@ -585,7 +718,7 @@ function updateTip(p) {
   const rows = G.vis.map(s => ({ s, pt: s.pts.find(pt => pt.t === p.hoverT) })).filter(r => r.pt);
   if (!rows.length) { tip.style.display = "none"; return; }
   tip.innerHTML = `<b>${G.def.nameAt(...tYM(p.hoverT))}</b>` + rows.map(({ s, pt }) =>
-    `<div class="r"><i style="background:${s.color}"></i><span>${s.mk.key}</span>` +
+    `<div class="r"><i style="background:${s.color}${s.dash ? ";opacity:.45" : ""}"></i><span>${s.label}</span>` +
     `<span${pt.stale ? ' style="font-style:italic;color:var(--stale)"' : ""}>${fmt(pt.v, !G.lvl)}</span></div>`).join("");
   tip.style.display = "block";
   const [mx, my] = p.mouse, tw = tip.offsetWidth, th = tip.offsetHeight;
@@ -609,9 +742,328 @@ document.addEventListener("click", e => {
 });
 // Esc closes the front-most chart
 document.addEventListener("keydown", e => {
-  if (e.key !== "Escape" || !PANELS.length) return;
+  if (e.key !== "Escape" || !PANELS.length || TAB !== "screen") return;
   closePanel(PANELS.reduce((a, b) => (+a.el.style.zIndex > +b.el.style.zIndex ? a : b)));
 });
+
+// ======================= curve simulator =======================
+// The simulated curve is each market's chain of 3M spreads, with the first contract held at its live price.
+// Every input (a Dec–Dec, a 3M spread, a 3MF or a 6MF) is a linear condition on those spreads. The simulator starts
+// from the live spreads and makes the smallest change (least squares) that meets all of your inputs:
+//   untouched spreads stay live · a Dec–Dec spreads its change evenly over the 3M spreads you have not fixed ·
+//   a fly moves its belly (3MF +2 → front spread +1, back spread −1) · a 3M spread moves just that spread.
+// If a new input is already decided by newer ones, the oldest input in the clash is released.
+// State per market: inp = { "kind|key": { v, t } }, kind = dd (key = year) | sp | f3 | f6 (key = front "y-m").
+const SIM = { live: [], markets: [], frozen: null, models: {}, state: {}, mk: null };
+try { SIM.state = JSON.parse(localStorage.getItem("curveSim") || "{}"); } catch (e) {}
+try { SIM.mk = localStorage.getItem("simMk"); } catch (e) {}
+const SIM_HIDDEN = new Set((() => { try { return JSON.parse(localStorage.getItem("simChartHidden") || "[]"); } catch (e) { return []; } })());
+const SIM_PANELS = [];
+const SIM_CHART_KEYS = ["dec1y", "sp6", "sp3", "fly3", "fly6", "cust"];
+const SIM_ROWS = [[0, 12], [1, 3], [1, 6], [1, 9]];   // [year offset, front month] of the 4 fronts in block y: D, M, J, S
+const SIM_KINDS = {
+  dd: { offs: [0, 12], w: [1, -1], label: "Dec–Dec" },
+  sp: { offs: [0, 3], w: [1, -1], label: "3M spreads", struct: "sp3", what: "3M spread" },
+  f3: { offs: [0, 3, 6], w: [1, -2, 1], label: "3M flies (3MF)", struct: "fly3", what: "3MF" },
+  f6: { offs: [0, 6, 12], w: [1, -2, 1], label: "6M flies (6MF)", struct: "fly6", what: "6MF" },
+};
+const fkey = (y, m) => `${y}-${m}`;
+const blockOf = (y, m) => (m === 12 ? y : y - 1);   // Dec(y), Mar/Jun/Sep(y+1) belong to the Dec(y)–Dec(y+1) block
+const r4 = x => Math.round(x * 1e4) / 1e4;
+const stOf = k => {
+  const st = SIM.state[k] || (SIM.state[k] = { inp: {} });
+  if (!st.inp) {   // inputs saved by the first version (3M pins + Dec–Dec only)
+    st.inp = {}; let t = 1;
+    for (const [key, v] of Object.entries(st.pins || {})) st.inp[`sp|${key}`] = { v, t: t++ };
+    for (const [y, v] of Object.entries(st.dd || {})) st.inp[`dd|${y}`] = { v, t: t++ };
+    delete st.pins; delete st.dd;
+  }
+  return st;
+};
+const nInputs = k => (SIM.state[k] && SIM.state[k].inp ? Object.keys(SIM.state[k].inp).length : 0);
+const saveSim = () => { try { localStorage.setItem("curveSim", JSON.stringify(SIM.state)); } catch (e) {} };
+const parseNum = s => {
+  const t = String(s).trim().replace(/−/g, "-").replace(/,/g, "");
+  if (t === "" || t === "—") return null;
+  const x = Number(t);
+  return Number.isFinite(x) ? x : NaN;
+};
+// front contract of an input: Dec of year y for a Dec–Dec, else the "y-m" key
+const frontOf = (kind, key) => (kind === "dd" ? [+key, 12] : key.split("-").map(Number));
+
+function simModel(mk) {
+  const st = stOf(mk.key);
+  const sp = [];
+  for (const f of mk.legs) {
+    const [by, bm] = ymAdd(f.y, f.m, 3), b = find(mk, by, bm);
+    if (!b) continue;
+    const r = combo(mk, [f, b], [1, -1], "");
+    sp.push({ f, b, key: fkey(f.y, f.m), block: blockOf(f.y, f.m), live: r && r.v != null ? r.v : null });
+  }
+  const n = sp.length, idx = {};
+  sp.forEach((s, i) => { idx[s.key] = i; });
+  const base = sp.map(s => s.live ?? 0);    // spreads with no live price start at 0
+
+  // A structure Σ w_j·P(front + offs_j) in bp is Σ_i c_i·s_i over the 3M spreads s_i from the front,
+  // with c_i = −(sum of the weights of the legs after spread i). null if a spread is missing.
+  const rowOf = id => {
+    const [kind, key] = id.split("|"), K = SIM_KINDS[kind];
+    if (!K) return null;
+    const [y, m] = frontOf(kind, key), q = K.offs.map(o => o / 3), row = [];
+    for (let i = 0; i < Math.max(...q); i++) {
+      const k = idx[fkey(...ymAdd(y, m, 3 * i))];
+      if (k == null) return null;
+      const c = -K.w.reduce((a, wj, j) => a + (q[j] > i ? wj : 0), 0);
+      if (c) row.push([k, c]);
+    }
+    return row;
+  };
+  const dotRow = (row, x) => row.reduce((a, [k, c]) => a + c * x[k], 0);
+
+  // newest input first; drop any input already fixed by newer ones (Gram–Schmidt rank test)
+  const ids = Object.keys(st.inp).sort((a, b) => st.inp[b].t - st.inp[a].t);
+  const Q = [], acc = [], dropped = [];
+  for (const id of ids) {
+    const row = rowOf(id);
+    if (!row) continue;                       // not on today's curve: keep it, ignore it
+    const a = new Float64Array(n);
+    for (const [k, c] of row) a[k] = c;
+    for (const q of Q) { let p = 0; for (let i = 0; i < n; i++) p += a[i] * q[i]; for (let i = 0; i < n; i++) a[i] -= p * q[i]; }
+    let nr = 0; for (let i = 0; i < n; i++) nr += a[i] * a[i];
+    nr = Math.sqrt(nr);
+    if (nr < 1e-7) { dropped.push(id); continue; }
+    for (let i = 0; i < n; i++) a[i] /= nr;
+    Q.push(a); acc.push({ id, row, v: st.inp[id].v });
+  }
+
+  // least change from live: s = base + Aᵀλ with (A·Aᵀ)λ = v − A·base
+  const m = acc.length, s = base.slice();
+  if (m) {
+    const M = acc.map(r1 => acc.map(r2 => { const x = new Float64Array(n); r2.row.forEach(([k, c]) => { x[k] = c; }); return dotRow(r1.row, x); }));
+    const rhs = acc.map(r => r.v - dotRow(r.row, base));
+    for (let c = 0; c < m; c++) {             // Gaussian elimination, partial pivoting
+      let p = c; for (let r = c + 1; r < m; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      [M[c], M[p]] = [M[p], M[c]]; [rhs[c], rhs[p]] = [rhs[p], rhs[c]];
+      for (let r = 0; r < m; r++) {
+        if (r === c || !M[r][c]) continue;
+        const f = M[r][c] / M[c][c];
+        for (let j = c; j < m; j++) M[r][j] -= f * M[c][j];
+        rhs[r] -= f * rhs[c];
+      }
+    }
+    acc.forEach((r, i) => { const lam = rhs[i] / M[i][i]; for (const [k, c] of r.row) s[k] += lam * c; });
+  }
+
+  const out = {};
+  sp.forEach((x, i) => { out[x.key] = { v: r4(s[i]), live: x.live, f: x.f }; });
+  const pinned = new Set(acc.map(r => r.id));
+  const valOf = id => {                        // what an input box shows
+    const row = rowOf(id);
+    if (!row) return null;
+    const v = r4(dotRow(row, s)), b = r4(dotRow(row, base));
+    const live = row.every(([k]) => sp[k].live != null) ? r4(dotRow(row, sp.map(x => x.live))) : null;
+    return { v, live, kind: pinned.has(id) ? "pin" : Math.abs(v - b) > 5e-5 ? "adj" : "live" };
+  };
+  const blocks = [...new Set(sp.map(x => x.block))].sort((a, b) => a - b);
+  return { sp, blocks, out, valOf, dropped };
+}
+
+// The simulated market: first contract at its live price, every next quarterly = previous − 3M spread.
+// `settle` carries the live price so every structure's "change" reads as sim − live.
+function simMarket(mk, model) {
+  const px = l => { const p = legPrice(l); return p ? p.px : l.settle; };
+  const now = Date.now(), P = [];
+  mk.legs.forEach((l, i) => {
+    const prev = mk.legs[i - 1], s = prev && model.out[fkey(prev.y, prev.m)];
+    const nx = prev && ymAdd(prev.y, prev.m, 3);
+    P[i] = s && nx[0] === l.y && nx[1] === l.m && P[i - 1] != null ? P[i - 1] - s.v / mk.bp : (px(l) ?? null);
+  });
+  return { ...mk, legs: mk.legs.map((l, i) => ({ ...l, bid: P[i], ask: P[i], last: P[i], settle: px(l) ?? null,
+                                                 trade_time: now, update_time: now })) };
+}
+
+// name of an input, e.g. "3MF JSD27 (Jun27 / Sep27 / Dec27)"
+function simName(kind, key) {
+  const [y, m] = frontOf(kind, key), K = SIM_KINDS[kind];
+  const legs = K.offs.map(o => lab(...ymAdd(y, m, o))).join(" / ");
+  return kind === "dd" ? `Dec${yy2(y)}–Dec${yy2(y + 1)}` : `${K.what} ${STRUCT[K.struct].name(y, m)}${yy2(y)} (${legs})`;
+}
+
+const simInput = (mk, kind, key, ok) => ok
+  ? `<input class="si" inputmode="decimal" autocomplete="off" spellcheck="false" data-mk="${mk}" data-kind="${kind}" data-key="${key}"><span class="si-d"></span>`
+  : '<span class="meta" title="A leg of this structure is not on the curve">—</span>';
+
+function simInputsHtml(mk, model) {
+  const cols = model.blocks.length + 1;
+  let h = `<div class="scroll"><table class="sim-in"><thead><tr><th></th>` +
+          model.blocks.map(y => `<th>Dec${yy2(y)}–Dec${yy2(y + 1)}</th>`).join("") + `</tr></thead><tbody>`;
+  h += `<tr class="dd"><th class="fly" title="Dec − Dec of the next year = sum of the four 3M spreads">Dec–Dec</th>` +
+       model.blocks.map(y => `<td>${simInput(mk.key, "dd", y, model.valOf(`dd|${y}`))}</td>`).join("") + `</tr>`;
+  for (const kind of ["sp", "f3", "f6"]) {
+    const K = SIM_KINDS[kind];
+    h += `<tr class="grp"><th colspan="${cols}">${K.label}</th></tr>`;
+    for (const [dy, m] of SIM_ROWS) {
+      h += `<tr><th class="fly">${STRUCT[K.struct].name(2000, m)}</th>` + model.blocks.map(y => {
+        const key = fkey(y + dy, m);
+        return `<td>${simInput(mk.key, kind, key, model.valOf(`${kind}|${key}`))}</td>`;
+      }).join("") + `</tr>`;
+    }
+  }
+  return h + `</tbody></table></div>`;
+}
+
+function updateSimInputs(host, mk, model) {
+  for (const el of host.querySelectorAll(`input.si[data-mk="${mk.key}"]`)) {
+    const kind = el.dataset.kind, key = el.dataset.key;
+    const o = model.valOf(`${kind}|${key}`);
+    if (!o) continue;
+    el.classList.toggle("pin", o.kind === "pin");
+    el.classList.toggle("adj", o.kind === "adj");
+    el.classList.toggle("nolive", o.live == null && o.kind === "live");
+    if (document.activeElement !== el) el.value = fmt(o.v);
+    const d = o.live != null ? r4(o.v - o.live) : null;
+    const dEl = el.nextElementSibling;
+    dEl.textContent = d ? fmt(d, true) : "";
+    dEl.className = "si-d" + (d > 0 ? " up" : d < 0 ? " down" : "");
+    el.title = `${mk.key} ${simName(kind, key)}\nLive ${fmt(o.live)} bp · sim ${fmt(o.v)} bp` +
+      (o.kind === "pin" ? "\nYour input — clear it (or press Delete) to go back to live"
+        : o.kind === "adj" ? "\nMoved to fit your inputs — type to set it"
+        : o.live == null ? "\nNo live price for a leg: type a value" : "\nLive (default) — type to change");
+  }
+}
+
+function renderSimTabs() {
+  const nav = document.getElementById("simMkTabs");
+  const html = SIM.live.map(m => {
+    const n = nInputs(m.key);
+    return `<button role="tab" data-mk="${m.key}" aria-selected="${m.key === SIM.mk}"` +
+           `${m.error ? ` class="off" title="${m.error}"` : ` title="${m.name}"`}>${m.key}${n ? `<sup>${n}</sup>` : ""}</button>`;
+  }).join("");
+  if (nav.innerHTML !== html) nav.innerHTML = html;
+}
+
+function renderSim() {
+  if (!data) return;
+  SIM.live = SIM.frozen || data.markets;
+  const ok = SIM.live.filter(m => !m.error && m.legs.length);
+  if (!SIM.live.some(m => m.key === SIM.mk)) SIM.mk = (ok[0] || SIM.live[0] || {}).key || null;
+  SIM.models = {};
+  for (const mk of ok) SIM.models[mk.key] = simModel(mk);
+  renderSimTabs();
+
+  const host = document.getElementById("simInputs");
+  const mk = SIM.live.find(m => m.key === SIM.mk), model = mk && SIM.models[mk.key];
+  document.getElementById("simReset").textContent = `Reset ${SIM.mk || ""} to live`;
+  document.getElementById("simReset").disabled = !nInputs(SIM.mk);
+  const sig = model ? JSON.stringify([mk.key, model.blocks, model.sp.map(s => s.key)]) : `err-${SIM.mk}`;
+  if (host.dataset.sig !== sig) {
+    host.innerHTML = model ? simInputsHtml(mk, model)
+      : `<p class="note">${mk ? `${mk.key}: ${mk.error || "no live contracts"}` : "No markets"}</p>`;
+    host.dataset.sig = sig;
+  }
+  if (model) updateSimInputs(host, mk, model);
+
+  SIM.markets = SIM.live.map(m => SIM.models[m.key] ? simMarket(m, SIM.models[m.key]) : m);
+  TIP_REF = "live";
+  try {
+    renderStrip("sim-cal1y", [0, 12], [1, -1], 2, f => `${letter(f.m)}${yy2(f.y)}`, SIM.markets, "level");
+    for (const k of ["sp6", "sp3", "fly3", "fly6", "cust"]) {
+      const st = STRUCT[k];
+      renderStrip(`sim-${k}`, st.offs, st.w, st.floor, f => `${st.name(f.y, f.m)}${yy2(f.y)}`, SIM.markets, "level");
+    }
+  } finally { TIP_REF = "settle"; }
+  if (!SIM_PANELS.length) initSimCharts();
+  SIM_PANELS.forEach(drawPanel);
+}
+
+function initSimCharts() {
+  const host = document.getElementById("simCharts");
+  for (const key of SIM_CHART_KEYS) {
+    const el = document.createElement("div");
+    el.className = "sp-card";
+    el.innerHTML = `<div class="cp-title"></div><div class="cp-legend"></div>` +
+                   `<div class="cp-plot"><svg role="img"></svg><div class="cp-tip"></div></div>`;
+    host.appendChild(el);
+    const p = { key, el, sim: true, focus: null, hidden: SIM_HIDDEN, hoverT: null, mouse: null, geom: null,
+                title: el.querySelector(".cp-title"), legend: el.querySelector(".cp-legend"),
+                plot: el.querySelector(".cp-plot"), svg: el.querySelector("svg"), tip: el.querySelector(".cp-tip") };
+    attachPanelEvents(p);
+    SIM_PANELS.push(p);
+  }
+}
+
+let simMsgTimer = null;
+function simMsg(text) {
+  const el = document.getElementById("simMsg");
+  el.textContent = text;
+  clearTimeout(simMsgTimer);
+  if (text) simMsgTimer = setTimeout(() => { el.textContent = ""; }, 10000);
+}
+
+function applySimInput(el) {
+  if (el.dataset.cancel) { delete el.dataset.cancel; renderSim(); return; }
+  const k = el.dataset.mk, st = stOf(k), kind = el.dataset.kind, key = el.dataset.key, id = `${kind}|${key}`;
+  const v = parseNum(el.value), mk = SIM.live.find(m => m.key === k);
+  if (!mk || !SIM.models[k] || Number.isNaN(v)) { el.blur(); renderSim(); return; }   // not a number: put the value back
+  if (v == null) delete st.inp[id];
+  else {
+    st.inp[id] = { v, t: Date.now() };
+    const { dropped } = simModel(mk);          // inputs your new one makes redundant are released
+    dropped.forEach(d => delete st.inp[d]);
+    simMsg(dropped.length ? `Released ${dropped.map(d => simName(...d.split("|"))).join(", ")} — now set by your newer inputs.` : "");
+  }
+  saveSim();
+  renderSim();
+}
+
+(() => {
+  const host = document.getElementById("simInputs");
+  host.addEventListener("change", e => { if (e.target.matches("input.si")) applySimInput(e.target); });
+  host.addEventListener("focusin", e => { if (e.target.matches("input.si")) e.target.select(); });
+  host.addEventListener("keydown", e => {
+    const el = e.target;
+    if (!el.matches("input.si")) return;
+    if (e.key === "Enter") el.blur();
+    else if (e.key === "Escape") { el.dataset.cancel = "1"; el.blur(); renderSim(); }
+    else if (e.key === "Delete") { e.preventDefault(); el.value = ""; applySimInput(el); }
+  });
+  document.getElementById("simMkTabs").addEventListener("click", e => {
+    const b = e.target.closest("button[data-mk]");
+    if (!b) return;
+    SIM.mk = b.dataset.mk;
+    try { localStorage.setItem("simMk", SIM.mk); } catch (err) {}
+    simMsg("");
+    renderSim();
+  });
+  document.getElementById("simReset").addEventListener("click", () => { delete SIM.state[SIM.mk]; saveSim(); simMsg(""); renderSim(); });
+  document.getElementById("simResetAll").addEventListener("click", () => { SIM.state = {}; saveSim(); simMsg(""); renderSim(); });
+  document.getElementById("simFreeze").addEventListener("change", e => {
+    SIM.frozen = e.target.checked && data ? structuredClone(data.markets) : null;
+    renderSim();
+  });
+})();
+
+// ======================= tabs =======================
+let TAB = "screen";
+try { TAB = localStorage.getItem("imTab") === "sim" ? "sim" : "screen"; } catch (e) {}
+function refresh() {
+  if (!data) return;
+  if (TAB === "sim") renderSim(); else { render(); drawCharts(); }
+}
+function setTab(t) {
+  TAB = t;
+  document.body.dataset.tab = t;
+  for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === t));
+  document.getElementById("tab-screen").hidden = t !== "screen";
+  document.getElementById("tab-sim").hidden = t !== "sim";
+  try { localStorage.setItem("imTab", t); } catch (e) {}
+  refresh();
+}
+document.querySelector(".tabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tab]");
+  if (b) setTab(b.dataset.tab);
+});
+setTab(TAB);
 
 function setConn(cls, text) {
   const el = document.getElementById("conn");
@@ -635,7 +1087,7 @@ async function tick() {
     document.getElementById("updated").textContent =
       `Updated ${new Date().toLocaleTimeString([], { hour12: false })}` +
       (age != null ? ` · last tick ${age < 1 ? "<1" : Math.round(age)}s ago` : "") + " · streaming";
-    render(); drawCharts();
+    refresh();
   } catch (e) {
     setConn("down", "Server not reachable");
   }

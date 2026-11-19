@@ -9,6 +9,18 @@ SOFR (SR3), SONIA (SO3), Euribor (I), CORRA (CRA) and ASX bills (YBA) on one pag
 - **Floating curve charts** – click any cell to chart that structure for every market; open several at
   once, click a legend item to hide / show a market, drag and resize the panels
 
+A second tab, **Curve simulator**, lets you reshape each market's curve and see every structure follow:
+
+- One input tab per market: each year's Dec–Dec spread and every 3M spread (DM, MJ, JS, SD), 3MF (DMJ, MJS, JSD, SDM)
+  and 6MF (DJD, MSM, JDJ, SMS) starting in it. Untouched inputs track live; the charts always show every market.
+- Any box can be typed; the rest follow with the smallest change from live (least squares over the 3M spreads).
+  A 3M spread moves only itself; a Dec–Dec is shared equally by the 3M spreads you haven't fixed; a fly moves its
+  belly (3MF +2 → front spread +1, back −1). If a box is already decided by newer inputs, the oldest in the clash is
+  released. Clear a box to go back to live.
+- The simulated curve keeps the first contract at its live price and chains the 3M spreads, so 1Y / 6M / 3M spreads,
+  3MF, 6MF and 6MF − 2×3MF are all rebuilt — shown as charts (solid = sim, dashed = live) and tables shaded by sim − live.
+- "Hold live reference" freezes the live defaults while you work; inputs are remembered in the browser.
+
 Values are in bp, from each leg's mid or last trade. Shading is the change since the previous
 settlement (green = up, red = down); italic grey marks a stale leg.
 
