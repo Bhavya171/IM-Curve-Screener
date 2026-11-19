@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spread Screener</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #ffffff; --ink: #1d2330; --muted: #6b7280; --line: #e3e6eb;
+    --head: #e4eaf3; --rowhead: #e9eef6; --stale: #9aa1ab;
+    --up: 46, 125, 50; --down: 198, 40, 40; --ok: #2e7d32; --bad: #c62828; --warn: #b26a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151b; --card: #1a1e26; --ink: #e6e9ef; --muted: #9aa3b2; --line: #2a303b;
+      --head: #222935; --rowhead: #1f2530; --stale: #6c7480;
+      --up: 76, 175, 80; --down: 239, 83, 80; --ok: #66bb6a; --bad: #ef5350; --warn: #ffb74d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12151b; --card: #1a1e26; --ink: #e6e9ef; --muted: #9aa3b2; --line: #2a303b;
+    --head: #222935; --rowhead: #1f2530; --stale: #6c7480;
+    --up: 76, 175, 80; --down: 239, 83, 80; --ok: #66bb6a; --bad: #ef5350; --warn: #ffb74d;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 13px/1.4 "Segoe UI", system-ui, -apple-system, sans-serif; }
+  main { max-width: 1500px; margin: 0 auto; padding: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }
+  h2 { font-size: 16px; font-weight: 600; margin: 0; flex: 1 1 auto; }
+  .meta { color: var(--muted); font-size: 12px; }
+  select { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line);
+           border-radius: 6px; padding: 5px 8px; }
+  label.ctl { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 3px 9px;
+          border-radius: 999px; border: 1px solid var(--line); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .pill.live .dot { background: var(--ok); } .pill.down .dot { background: var(--bad); } .pill.wait .dot { background: var(--warn); }
+  .banner { border: 1px solid var(--bad); color: var(--bad); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; display: none; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; white-space: nowrap; }
+  thead th { background: var(--head); font-weight: 600; text-align: center; }
+  th.row { background: var(--rowhead); text-align: left; font-weight: 600; min-width: 150px; }
+  th.row small { display: block; color: var(--muted); font-weight: 400; font-size: 11px; }
+  th.fly { background: var(--rowhead); text-align: center; font-weight: 600; }
+  td.v { text-align: right; min-width: 74px; cursor: default; }
+  td.v .lab { float: left; color: var(--muted); font-size: 10px; margin-right: 8px; line-height: 18px; }
+  td.v.stale .num { font-style: italic; color: var(--stale); }
+  td.err { color: var(--muted); font-style: italic; text-align: center; }
+  .note { color: var(--muted); font-size: 12px; margin-top: 10px; }
+  @media (max-width: 640px) { main { padding: 16px 16px; } .card { padding: 12px; } }
+
+  /* ---------- floating curve chart ---------- */
+  :root {
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300;
+    --grid: #e1e0d9; --axis: #c3c2b7; --tick: #898781; --ink2: #52514e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #0ca30c;
+      --grid: #2c2c2a; --axis: #383835; --tick: #898781; --ink2: #c3c2b7;
+    }
+  }
+  :root[data-theme="dark"] {
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #0ca30c;
+    --grid: #2c2c2a; --axis: #383835; --tick: #898781; --ink2: #c3c2b7;
+  }
+  td.v { cursor: pointer; }
+  td.v:hover { outline: 2px solid var(--s1); outline-offset: -2px; }
+  td.v.charted { box-shadow: inset 0 0 0 2px var(--ink); }
+  .cp { position: fixed; right: 24px; bottom: 24px; width: min(580px, calc(100vw - 32px)); height: 380px;
+        min-width: 320px; min-height: 260px; background: var(--card); border: 1px solid var(--line);
+        border-radius: 10px; box-shadow: 0 14px 40px rgba(0,0,0,.28); display: none; flex-direction: column;
+        resize: both; overflow: hidden; z-index: 50; }
+  .cp.open { display: flex; }
+  .cp-head { display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 14px; cursor: move;
+             border-bottom: 1px solid var(--line); user-select: none; }
+  .cp-title { flex: 1; font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cp-title small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+  .cp-x { border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer;
+          padding: 2px 6px; border-radius: 6px; }
+  .cp-x:hover { background: var(--head); color: var(--ink); }
+  .cp-legend { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 14px 0; }
+  .cp-legend button { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px;
+                      color: var(--ink); background: none; border: 1px solid var(--line); border-radius: 999px;
+                      padding: 2px 10px 2px 8px; cursor: pointer; }
+  .cp-legend button .sw { width: 14px; height: 3px; border-radius: 2px; }
+  .cp-legend button[aria-pressed="false"] { color: var(--muted); text-decoration: line-through; }
+  .cp-legend button[aria-pressed="false"] .sw { opacity: .3; }
+  .cp-legend button:disabled { cursor: not-allowed; opacity: .55; text-decoration: none; }
+  .cp-plot { position: relative; flex: 1; min-height: 0; }
+  .cp-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .cp-tip { position: absolute; pointer-events: none; background: var(--card); border: 1px solid var(--line);
+            border-radius: 8px; padding: 6px 9px; font-size: 12px; box-shadow: 0 4px 14px rgba(0,0,0,.18);
+            display: none; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .cp-tip b { display: block; margin-bottom: 3px; }
+  .cp-tip .r { display: flex; align-items: center; gap: 6px; }
+  .cp-tip .r i { width: 10px; height: 3px; border-radius: 2px; display: inline-block; }
+  .cp-tip .r span:last-child { margin-left: auto; padding-left: 12px; }
+  .cp-foot { color: var(--muted); font-size: 11px; padding: 0 14px 8px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="banner" id="banner"></div>
+
+  <section class="card">
+    <div class="bar">
+      <h2 id="boardTitle">Spread board</h2>
+      <span class="meta" id="updated">Waiting for data…</span>
+      <span class="pill wait" id="conn"><span class="dot"></span><span id="connText">Connecting</span></span>
+      <label class="ctl">Spread
+        <select id="tenor">
+          <option value="3">3M</option><option value="6">6M</option>
+          <option value="12" selected>1Y</option><option value="24">2Y</option>
+        </select>
+      </label>
+      <label class="ctl">Show
+        <select id="view">
+          <option value="level" selected>Level (bp)</option>
+          <option value="chg">1-day change (bp)</option>
+        </select>
+      </label>
+      <label class="ctl">Price
+        <select id="basis">
+          <option value="mid" selected>Mid</option>
+          <option value="last">Last trade</option>
+        </select>
+      </label>
+    </div>
+    <div class="scroll"><table id="board"></table></div>
+    <p class="note" id="boardNote"></p>
+  </section>
+
+  <section class="card">
+    <div class="bar"><h2>6M spreads</h2><span class="meta">front − (front+6M) · e.g. DJ = Dec − Jun</span></div>
+    <div class="scroll"><table id="sp6"></table></div>
+  </section>
+
+  <section class="card">
+    <div class="bar"><h2>3M flies (3MF)</h2><span class="meta">front − 2×(front+3M) + (front+6M) · e.g. DMJ</span></div>
+    <div class="scroll"><table id="fly3"></table></div>
+  </section>
+
+  <section class="card">
+    <div class="bar"><h2>6M flies (6MF)</h2><span class="meta">front − 2×(front+6M) + (front+12M) · e.g. DJD</span></div>
+    <div class="scroll"><table id="fly6"></table></div>
+  </section>
+
+  <section class="card">
+    <div class="bar"><h2>6MF − 2×3MF</h2><span class="meta">6M fly minus twice the 3M fly with the same front leg ·
+      e.g. JDJ − 2×JSD = −Jun + 4·Sep − 4·Dec + Jun (weights −1, 4, −4, 1)</span></div>
+    <div class="scroll"><table id="cust"></table></div>
+    <p class="note">All strips: S1 starts at the first live quarterly, S2 one quarter later, and so on; the small
+      label is the structure's name (D/M/J/S = Dec/Mar/Jun/Sep) and the front year. Hover a cell for every leg.</p>
+  </section>
+
+  <section class="card">
+    <div class="bar"><h2 id="decTitle">Dec–Dec spreads &amp; flies</h2></div>
+    <div class="scroll"><table id="dec"></table></div>
+    <p class="note">Each Dec–Dec block lists every structure starting in that year (Dec, Mar, Jun, Sep).
+      Spread = front − back. 3MF = front − 2×middle + back on legs 3M apart (DMJ, MJS, JSD, SDM); 6MF the same on
+      legs 6M apart (DJD, MSM, JDJ, SMS); 6MF − 2×3MF uses the 3MF with the same front leg (DJD − 2DMJ, MSM − 2MJS, JDJ − 2JSD, SMS − 2SDM). All in bp. Hover a cell to see each leg's price.
+      Shading is the change since the previous settlement (green = up, red = down). Italic grey = a leg has no
+      usable price on the chosen basis (no two-sided quote for Mid; for Last, its last trade is over
+      <span class="staleMin">30</span> minutes older than the freshest leg).
+      Click any cell to chart that structure's curve for every market.</p>
+  </section>
+</main>
+
+
+<script>
+const COLS = 12;
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const S = { tenor: 12, view: "level", basis: "mid" };
+let data = null, sig = "";
+
+try { Object.assign(S, JSON.parse(localStorage.getItem("spreadScreener") || "{}")); } catch (e) {}
+for (const k of ["tenor", "view", "basis"]) {
+  const el = document.getElementById(k);
+  el.value = String(S[k]);
+  el.addEventListener("change", () => {
+    S[k] = k === "tenor" ? Number(el.value) : el.value;
+    try { localStorage.setItem("spreadScreener", JSON.stringify(S)); } catch (e) {}
+    render(); drawCharts();
+  });
+}
+
+const fmt = (x, signed) => x == null ? "—"
+  : (signed && x > 0 ? "+" : "") + x.toFixed(2).replace("-", "−");
+const fmtPx = x => x == null ? "—" : String(+x.toFixed(5));
+const fmtT = t => t == null ? "—" : new Date(t).toLocaleTimeString([], { hour12: false });
+const ymAdd = (y, m, k) => { const t = y * 12 + (m - 1) + k; return [Math.floor(t / 12), (t % 12) + 1]; };
+const find = (mk, y, m) => mk.legs.find(l => l.y === y && l.m === m) || null;
+const tenorName = t => t % 12 === 0 ? `${t / 12}Y` : `${t}M`;
+
+function legPrice(l) {
+  const twoSided = l.bid != null && l.ask != null && l.ask >= l.bid;
+  if (S.basis === "mid") {
+    if (twoSided) return { px: (l.bid + l.ask) / 2, t: l.update_time, stale: false, src: "mid" };
+    if (l.last != null) return { px: l.last, t: l.trade_time, stale: true, src: "last (no two-sided quote)" };
+    return null;
+  }
+  if (l.last != null) return { px: l.last, t: l.trade_time, stale: false, src: "last" };
+  if (twoSided) return { px: (l.bid + l.ask) / 2, t: l.update_time, stale: true, src: "mid (no trade)" };
+  return null;
+}
+
+// Weighted combination of legs, in bp. Returns null when a leg or its price is missing.
+function combo(mk, legs, w, name) {
+  if (legs.some(l => !l)) return null;
+  const ps = legs.map(legPrice);
+  if (ps.some(p => !p)) return { v: null, chg: null, stale: true, tip: `${name}\nNo price yet for a leg` };
+  let v = 0, s = 0, settleOk = true;
+  legs.forEach((l, i) => { v += w[i] * ps[i].px; if (l.settle == null) settleOk = false; else s += w[i] * l.settle; });
+  v = Math.round(v * mk.bp * 1e4) / 1e4;
+  s = Math.round(s * mk.bp * 1e4) / 1e4;
+  let stale = ps.some(p => p.stale);
+  if (S.basis === "last") {
+    const ts = ps.map(p => p.t);
+    if (ts.some(t => t == null)) stale = true;
+    else { const mx = Math.max(...ts); if (ts.some(t => mx - t > data.stale_minutes * 60000)) stale = true; }
+  }
+  const chg = settleOk ? Math.round((v - s) * 1e4) / 1e4 : null;
+  const lines = legs.map((l, i) =>
+    `${w[i] > 0 ? "+" : "−"}${Math.abs(w[i]) === 1 ? "" : Math.abs(w[i]) + "×"}${l.code}  ${fmtPx(ps[i].px)} ${ps[i].src}` +
+    `  (bid ${fmtPx(l.bid)} / ask ${fmtPx(l.ask)}, last ${fmtPx(l.last)} @ ${fmtT(l.trade_time)}, settle ${fmtPx(l.settle)})`);
+  const tip = `${name}\n${lines.join("\n")}\nNow ${fmt(v)} bp · settle ${settleOk ? fmt(s) : "—"} bp · change ${fmt(chg, true)} bp`;
+  return { v, chg, stale, tip };
+}
+
+function cellHtml(id, label) {
+  return `<td class="v" id="${id}">${label ? `<span class="lab">${label}</span>` : ""}<span class="num">—</span></td>`;
+}
+
+function paint(cells, scaleOf) {
+  const chgs = cells.map(c => c.r && c.r.chg).filter(x => x != null).map(Math.abs);
+  const scale = Math.max(scaleOf, ...chgs);
+  for (const c of cells) {
+    const td = document.getElementById(c.id);
+    if (!td) continue;
+    const r = c.r;
+    const val = !r ? null : S.view === "level" ? r.v : r.chg;
+    td.querySelector(".num").textContent = fmt(val, S.view === "chg");
+    td.classList.toggle("stale", !!(r && r.stale));
+    td.title = r ? r.tip : "Contract not listed";
+    if (r && r.chg != null && r.chg !== 0) {
+      const a = (0.12 + 0.5 * Math.min(Math.abs(r.chg) / scale, 1)).toFixed(3);
+      td.style.background = `rgba(var(${r.chg > 0 ? "--up" : "--down"}), ${a})`;
+    } else td.style.background = "";
+  }
+}
+
+// Quarterly letters as the desk writes them: D/M/J/S = Dec/Mar/Jun/Sep (other months fall back to the month code).
+const QL = { 3: "M", 6: "J", 9: "S", 12: "D" };
+const ML = "FGHJKMNQUVXZ";
+const letter = m => QL[m] || ML[m - 1];
+const ymsAt = (y, m, offs) => offs.map(o => ymAdd(y, m, o));
+const legsAt = (mk, y, m, offs) => ymsAt(y, m, offs).map(([yy, mm]) => find(mk, yy, mm));
+
+// Structures built from month offsets off the front leg.
+const STRUCT = {
+  sp6:  { offs: [0, 6], w: [1, -1], floor: 2,
+          name: (y, m) => ymsAt(y, m, [0, 6]).map(([, mm]) => letter(mm)).join("") },
+  fly3: { offs: [0, 3, 6], w: [1, -2, 1], floor: 1,
+          name: (y, m) => ymsAt(y, m, [0, 3, 6]).map(([, mm]) => letter(mm)).join("") },
+  fly6: { offs: [0, 6, 12], w: [1, -2, 1], floor: 1,
+          name: (y, m) => ymsAt(y, m, [0, 6, 12]).map(([, mm]) => letter(mm)).join("") },
+  // 6MF − 2×3MF with the same front leg: (Q0 − 2Q6 + Q12) − 2(Q0 − 2Q3 + Q6) = −Q0 + 4Q3 − 4Q6 + Q12
+  cust: { offs: [0, 3, 6, 12], w: [-1, 4, -4, 1], floor: 0.5,
+          name: (y, m) => { const L = ymsAt(y, m, [0, 3, 6, 12]).map(([, mm]) => letter(mm));
+                            return `${L[0]}${L[2]}${L[3]}−2${L[0]}${L[1]}${L[2]}`; } },
+};
+
+// One row per market, S1..S12 = structure starting at each live quarterly in turn.
+function renderStrip(tableId, offs, w, floor, nameOf, markets) {
+  const table = document.getElementById(tableId);
+  const tSig = JSON.stringify([offs, markets.map(m => [m.key, m.error, m.legs.map(l => l.code)])]);
+  const cells = [];
+  let html = `<thead><tr><th>Product</th>${Array.from({ length: COLS }, (_, i) => `<th>S${i + 1}</th>`).join("")}</tr></thead><tbody>`;
+  for (const mk of markets) {
+    html += `<tr><th class="row">${mk.key}<small>${mk.name}</small></th>`;
+    if (mk.error) { html += `<td class="err" colspan="${COLS}">${mk.error}</td></tr>`; continue; }
+    for (let k = 0; k < COLS; k++) {
+      const id = `${tableId}-${mk.key}-${k}`, front = mk.legs[k];
+      if (!front) { html += `<td class="v"><span class="num">—</span></td>`; continue; }
+      const legs = legsAt(mk, front.y, front.m, offs);
+      const nm = nameOf(front);
+      html += cellHtml(id, nm);
+      cells.push({ id, r: legs.every(Boolean)
+        ? combo(mk, legs, w, `${mk.key} ${nm}: ${legs.map((l, i) => (w[i] < 0 ? "−" : i ? "+" : "") + (Math.abs(w[i]) === 1 ? "" : Math.abs(w[i])) + l.label).join(" ")}`)
+        : null });
+    }
+    html += "</tr>";
+  }
+  html += "</tbody>";
+  if (table.dataset.sig !== tSig) { table.innerHTML = html; table.dataset.sig = tSig; }
+  paint(cells, floor);
+}
+
+function render() {
+  if (!data) return;
+  const markets = data.markets;
+  const live = markets.filter(m => !m.error && m.legs.length);
+  const yy = y => String(y % 100).padStart(2, "0");
+
+  // ---------- strips ----------
+  renderStrip("board", [0, S.tenor], [1, -1], 2, f => `${letter(f.m)}${yy(f.y)}`, markets);
+  for (const id of ["sp6", "fly3", "fly6", "cust"]) {
+    const st = STRUCT[id];
+    renderStrip(id, st.offs, st.w, st.floor, f => `${st.name(f.y, f.m)}${yy(f.y)}`, markets);
+  }
+  document.getElementById("boardTitle").textContent = `Spread board · ${tenorName(S.tenor)} calendars`;
+  document.getElementById("boardNote").textContent =
+    `S1 = the first live quarterly against the contract ${tenorName(S.tenor)} later, S2 starts one quarter on, and so on ` +
+    `(the small label is the front leg). Spread = front − back in bp, from each leg's ${S.basis === "mid" ? "mid" : "last trade"}. ` +
+    `Shading = change since the previous settlement (green = spread up, red = down). Italic grey = a leg's price is not on the chosen basis or is stale.`;
+
+  // ---------- Dec-Dec spreads & flies ----------
+  const decs = live.map(m => m.legs.find(l => l.m === 12)).filter(Boolean).map(l => l.y);
+  const dec = document.getElementById("dec");
+  if (!live.length || !decs.length) { dec.innerHTML = `<tbody><tr><td class="err">No live markets yet.</td></tr></tbody>`; return; }
+  const y0 = Math.min(...decs);
+  document.getElementById("decTitle").textContent = `Dec–Dec spreads & flies · ${live.map(m => m.key).join(", ")}`;
+  const decCells = [];
+  const mh = live.map(m => `<th>${m.key}</th>`).join("");
+  let d = `<thead><tr><th rowspan="2"></th><th colspan="${live.length}">Dec–Dec spread</th>` +
+          `<th rowspan="2">6MS</th><th colspan="${live.length}">6M spread</th>` +
+          `<th rowspan="2">3MF</th><th colspan="${live.length}">3M fly</th>` +
+          `<th rowspan="2">6MF</th><th colspan="${live.length}">6M fly</th>` +
+          `<th rowspan="2">6MF−2×3MF</th><th colspan="${live.length}">6MF − 2×3MF</th></tr>` +
+          `<tr>${mh}${mh}${mh}${mh}${mh}</tr></thead><tbody>`;
+  // every structure starting in the block: Dec(y), Mar, Jun, Sep(y+1)
+  const starts = [[0, 12], [1, 3], [1, 6], [1, 9]];
+  const desc = (mk, legs, w, nm) => legs.every(Boolean)
+    ? combo(mk, legs, w, `${mk.key} ${nm} (${legs.map(l => l.label).join("/")})`) : null;
+  for (let y = y0; y < y0 + 3; y++) {
+    const name = `Dec${yy(y)}–Dec${yy(y + 1)}`;
+    starts.forEach(([dy, m], si) => {
+      const sy = y + dy;
+      d += "<tr>";
+      if (si === 0) {
+        d += `<th class="row" rowspan="${starts.length}">${name}</th>`;
+        for (const mk of live) {
+          const id = `d-s-${mk.key}-${y}`;
+          d += cellHtml(id).replace('<td class="v"', `<td class="v" rowspan="${starts.length}"`);
+          decCells.push({ id, r: desc(mk, [find(mk, y, 12), find(mk, y + 1, 12)], [1, -1], `${name} spread`) });
+        }
+      }
+      for (const key of ["sp6", "fly3", "fly6", "cust"]) {
+        const st = STRUCT[key], nm = st.name(sy, m);
+        d += `<th class="fly">${nm}</th>`;
+        for (const mk of live) {
+          const id = `d-${key}-${mk.key}-${sy}-${m}`;
+          d += cellHtml(id);
+          decCells.push({ id, g: key, r: desc(mk, legsAt(mk, sy, m, st.offs), st.w, nm) });
+        }
+      }
+      d += "</tr>";
+    });
+  }
+  d += "</tbody>";
+  const decSig = JSON.stringify([y0, live.map(m => m.key)]);
+  if (dec.dataset.sig !== decSig) { dec.innerHTML = d; dec.dataset.sig = decSig; }
+  // shade each structure type on its own scale so small fly moves still show next to the spreads
+  paint(decCells.filter(c => !c.g), 2);
+  for (const key of ["sp6", "fly3", "fly6", "cust"]) paint(decCells.filter(c => c.g === key), STRUCT[key].floor);
+}
+
+// ======================= floating curve charts (one panel per structure) =======================
+const yy2 = y => String(y % 100).padStart(2, "0");
+const lab = (y, m) => `${MONTHS[m - 1]}${yy2(y)}`;
+const tYM = t => [Math.floor(t / 12), (t % 12) + 1];
+const PANELS = [];          // open chart panels
+let topZ = 50;
+let lastHidden = [];        // markets hidden most recently: new panels start from this
+try { lastHidden = JSON.parse(localStorage.getItem("spreadChartHidden") || "[]"); } catch (e) {}
+
+function chartDef(key) {
+  if (key === "board" || key === "dec1y") {
+    const t = key === "board" ? S.tenor : 12;
+    return { title: `${tenorName(t)} calendar spreads`, offs: [0, t], w: [1, -1],
+             nameAt: (y, m) => { const [by, bm] = ymAdd(y, m, t); return `${lab(y, m)}–${lab(by, bm)}`; } };
+  }
+  const st = STRUCT[key];
+  const titles = { sp6: "6M spreads", fly3: "3M flies (3MF)", fly6: "6M flies (6MF)", cust: "6MF − 2×3MF (same front)" };
+  return { title: titles[key], offs: st.offs, w: st.w, nameAt: (y, m) => `${st.name(y, m)} ${lab(y, m)}` };
+}
+// the 1Y Dec-Dec spread and the board share a chart only when the board is on 1Y
+const chartKey = key => (key === "board" && S.tenor === 12 ? "dec1y" : key);
+
+function niceTicks(lo, hi, n) {
+  const raw = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(f => f * mag).find(s => s >= raw);
+  const out = [];
+  for (let v = Math.floor(lo / step) * step; out.length < 30; v += step) {
+    out.push(Math.round(v * 1e6) / 1e6);
+    if (v >= hi - 1e-9) break;
+  }
+  return out;
+}
+
+function markCharted() {
+  document.querySelectorAll("td.charted").forEach(c => c.classList.remove("charted"));
+  for (const p of PANELS) { const td = p.cellId && document.getElementById(p.cellId); if (td) td.classList.add("charted"); }
+}
+
+function raise(p) { p.el.style.zIndex = String(++topZ); }
+
+function openChart(key, focusT, cellId) {
+  const ck = chartKey(key);
+  let p = PANELS.find(x => x.key === ck);
+  if (!p) p = makePanel(ck);
+  p.focus = focusT; p.cellId = cellId;
+  raise(p); markCharted(); drawPanel(p);
+}
+
+function makePanel(key) {
+  const el = document.createElement("div");
+  el.className = "cp open";
+  el.setAttribute("role", "dialog");
+  el.innerHTML =
+    `<div class="cp-head"><div class="cp-title"></div>` +
+    `<button class="cp-x" title="Close" aria-label="Close chart">×</button></div>` +
+    `<div class="cp-legend"></div>` +
+    `<div class="cp-plot"><svg role="img"></svg><div class="cp-tip"></div></div>` +
+    `<div class="cp-foot">x = front contract · dashed line = the cell you clicked · hollow point = stale leg · click a legend item to hide / show a market</div>`;
+  document.body.appendChild(el);
+  const p = { key, el, focus: null, cellId: null, hidden: new Set(lastHidden), hoverT: null, mouse: null, geom: null,
+              head: el.querySelector(".cp-head"), title: el.querySelector(".cp-title"), legend: el.querySelector(".cp-legend"),
+              plot: el.querySelector(".cp-plot"), svg: el.querySelector("svg"), tip: el.querySelector(".cp-tip") };
+
+  // cascade new panels up-left from the bottom-right corner
+  const n = PANELS.length, w = el.offsetWidth, h = el.offsetHeight;
+  Object.assign(el.style, { right: "auto", bottom: "auto",
+    left: `${Math.max(8, innerWidth - w - 24 - n * 32)}px`, top: `${Math.max(8, innerHeight - h - 24 - n * 32)}px` });
+  PANELS.push(p);
+
+  el.addEventListener("pointerdown", () => raise(p));
+  el.querySelector(".cp-x").addEventListener("click", () => closePanel(p));
+  p.legend.addEventListener("click", e => {
+    const b = e.target.closest("button[data-k]");
+    if (!b || b.disabled) return;
+    const k = b.dataset.k;
+    p.hidden.has(k) ? p.hidden.delete(k) : p.hidden.add(k);
+    lastHidden = [...p.hidden];
+    try { localStorage.setItem("spreadChartHidden", JSON.stringify(lastHidden)); } catch (err) {}
+    drawPanel(p);
+  });
+  p.plot.addEventListener("mousemove", e => {
+    const G = p.geom;
+    if (!G) return;
+    const rc = p.plot.getBoundingClientRect(), mx = e.clientX - rc.left;
+    p.mouse = [mx, e.clientY - rc.top];
+    let best = G.ts[0];
+    for (const t of G.ts) if (Math.abs(G.X(t) - mx) < Math.abs(G.X(best) - mx)) best = t;
+    if (best !== p.hoverT) { p.hoverT = best; drawPanel(p); } else updateTip(p);
+  });
+  p.plot.addEventListener("mouseleave", () => { p.hoverT = null; p.mouse = null; drawPanel(p); });
+  p.ro = new ResizeObserver(() => drawPanel(p));
+  p.ro.observe(p.plot);
+
+  let drag = null;
+  p.head.addEventListener("pointerdown", e => {
+    if (e.target.closest("button")) return;
+    const r = el.getBoundingClientRect();
+    drag = { sx: e.clientX, sy: e.clientY, ox: r.left, oy: r.top };
+    p.head.setPointerCapture(e.pointerId);
+  });
+  p.head.addEventListener("pointermove", e => {
+    if (!drag) return;
+    el.style.left = `${Math.min(Math.max(0, drag.ox + e.clientX - drag.sx), innerWidth - 80)}px`;
+    el.style.top = `${Math.min(Math.max(0, drag.oy + e.clientY - drag.sy), innerHeight - 40)}px`;
+  });
+  p.head.addEventListener("pointerup", () => { drag = null; });
+  return p;
+}
+
+function closePanel(p) {
+  p.ro.disconnect();
+  p.el.remove();
+  PANELS.splice(PANELS.indexOf(p), 1);
+  markCharted();
+}
+
+function drawCharts() {
+  // the board's tenor can change under an open "board" chart: fold it into the 1Y chart if one exists
+  for (const p of [...PANELS]) {
+    const ck = chartKey(p.key);
+    if (ck !== p.key && PANELS.some(x => x !== p && x.key === ck)) closePanel(p); else p.key = ck;
+  }
+  PANELS.forEach(drawPanel);
+}
+
+function drawPanel(p) {
+  if (!data || !p.el.isConnected) return;
+  const def = chartDef(p.key), lvl = S.view === "level";
+  p.title.innerHTML = `${def.title}<small>${lvl ? "level" : "1-day change"} · bp · ${S.basis === "mid" ? "mid" : "last trade"}</small>`;
+  p.el.setAttribute("aria-label", `${def.title} chart`);
+
+  // one series per market (colour fixed by the market's position, so hiding one never repaints the rest)
+  const all = data.markets.map((mk, i) => ({
+    mk, color: `var(--s${i + 1})`,
+    pts: mk.error ? [] : mk.legs.slice(0, COLS).map(f => {
+      const legs = legsAt(mk, f.y, f.m, def.offs);
+      const r = legs.every(Boolean) ? combo(mk, legs, def.w, "") : null;
+      return { t: f.y * 12 + f.m - 1, v: r ? (lvl ? r.v : r.chg) : null, stale: r ? r.stale : false };
+    }).filter(pt => pt.v != null),
+  }));
+
+  const lsig = all.map(s => s.mk.key + (s.mk.error ? "!" : "") + (p.hidden.has(s.mk.key) ? "h" : "")).join();
+  if (p.legend.dataset.sig !== lsig) {
+    p.legend.innerHTML = all.map(s =>
+      `<button data-k="${s.mk.key}" aria-pressed="${!s.mk.error && !p.hidden.has(s.mk.key)}"` +
+      `${s.mk.error ? ` disabled title="${s.mk.error}"` : ` title="Click to hide / show ${s.mk.key}"`}>` +
+      `<span class="sw" style="background:${s.color}"></span>${s.mk.key}</button>`).join("");
+    p.legend.dataset.sig = lsig;
+  }
+
+  const W = p.plot.clientWidth, H = p.plot.clientHeight;
+  const vis = all.filter(s => !s.mk.error && !p.hidden.has(s.mk.key) && s.pts.length);
+  if (!vis.length || W < 50 || H < 50) {
+    p.svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" font-size="12" fill="var(--muted)">No market selected — click a legend item</text>`;
+    p.geom = null; updateTip(p); return;
+  }
+
+  const ts = [...new Set(vis.flatMap(s => s.pts.map(pt => pt.t)))].sort((a, b) => a - b);
+  const vals = vis.flatMap(s => s.pts.map(pt => pt.v));
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  if (!lvl || (lo <= 0 && hi >= 0)) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); }
+  if (hi - lo < 1e-9) { lo -= 1; hi += 1; }
+  const ticks = niceTicks(lo, hi, Math.max(3, Math.floor(H / 55)));
+  lo = Math.min(lo, ticks[0]); hi = Math.max(hi, ticks[ticks.length - 1]);
+
+  const M = { l: 48, r: 46, t: 14, b: 26 };
+  const x0 = ts[0], x1 = ts[ts.length - 1], pw = W - M.l - M.r, ph = H - M.t - M.b;
+  const X = t => M.l + (x1 === x0 ? pw / 2 : (t - x0) / (x1 - x0) * pw);
+  const Y = v => M.t + (hi - v) / (hi - lo) * ph;
+
+  let g = "";
+  for (const tv of ticks) {
+    g += `<line x1="${M.l}" x2="${W - M.r}" y1="${Y(tv)}" y2="${Y(tv)}" stroke="var(${tv === 0 ? "--axis" : "--grid"})" stroke-width="1"/>` +
+         `<text x="${M.l - 6}" y="${Y(tv) + 4}" text-anchor="end" font-size="11" fill="var(--tick)">${fmt(tv, !lvl)}</text>`;
+  }
+  const every = Math.max(1, Math.ceil(ts.length * 50 / pw));
+  ts.forEach((t, i) => {
+    if (i % every) return;
+    g += `<text x="${X(t)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--tick)">${lab(...tYM(t))}</text>`;
+  });
+  if (p.focus != null && p.focus >= x0 && p.focus <= x1) {
+    g += `<line x1="${X(p.focus)}" x2="${X(p.focus)}" y1="${M.t}" y2="${H - M.b}" stroke="var(--muted)" stroke-dasharray="4 4"/>`;
+  }
+  if (p.hoverT != null && ts.includes(p.hoverT)) {
+    g += `<line x1="${X(p.hoverT)}" x2="${X(p.hoverT)}" y1="${M.t}" y2="${H - M.b}" stroke="var(--axis)" stroke-width="1"/>`;
+  }
+  for (const s of vis) {
+    let d = "", prev = null;
+    for (const pt of s.pts) {  // break the line where a contract is missing
+      d += (prev != null && pt.t - prev <= 3 ? "L" : "M") + X(pt.t).toFixed(1) + " " + Y(pt.v).toFixed(1);
+      prev = pt.t;
+    }
+    g += `<path d="${d}" fill="none" style="stroke:${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    for (const pt of s.pts) {
+      g += `<circle cx="${X(pt.t)}" cy="${Y(pt.v)}" r="${pt.t === p.hoverT ? 5 : 4}" stroke-width="2" ` +
+           `style="fill:${pt.stale ? "var(--card)" : s.color};stroke:${pt.stale ? s.color : "var(--card)"}"/>`;
+    }
+  }
+  // direct labels at the end of each line, nudged apart
+  const ends = vis.map(s => { const pt = s.pts[s.pts.length - 1]; return { k: s.mk.key, x: X(pt.t) + 8, y: Y(pt.v) }; })
+                  .sort((a, b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+  for (const e of ends) g += `<text x="${e.x}" y="${e.y + 4}" font-size="11" font-weight="600" fill="var(--ink2)">${e.k}</text>`;
+
+  p.svg.setAttribute("aria-label", `${def.title} curve for ${vis.map(s => s.mk.key).join(", ")}`);
+  p.svg.innerHTML = g;
+  p.geom = { ts, X, vis, def, lvl };
+  updateTip(p);
+}
+
+function updateTip(p) {
+  const tip = p.tip, G = p.geom;
+  if (!G || p.hoverT == null || !p.mouse) { tip.style.display = "none"; return; }
+  const rows = G.vis.map(s => ({ s, pt: s.pts.find(pt => pt.t === p.hoverT) })).filter(r => r.pt);
+  if (!rows.length) { tip.style.display = "none"; return; }
+  tip.innerHTML = `<b>${G.def.nameAt(...tYM(p.hoverT))}</b>` + rows.map(({ s, pt }) =>
+    `<div class="r"><i style="background:${s.color}"></i><span>${s.mk.key}</span>` +
+    `<span${pt.stale ? ' style="font-style:italic;color:var(--stale)"' : ""}>${fmt(pt.v, !G.lvl)}</span></div>`).join("");
+  tip.style.display = "block";
+  const [mx, my] = p.mouse, tw = tip.offsetWidth, th = tip.offsetHeight;
+  tip.style.left = `${mx + 14 + tw > p.plot.clientWidth ? mx - 14 - tw : mx + 14}px`;
+  tip.style.top = `${Math.max(0, Math.min(my - th / 2, p.plot.clientHeight - th))}px`;
+}
+
+// open (or refocus) a chart from any value cell
+document.addEventListener("click", e => {
+  const td = e.target.closest("td.v");
+  if (!td || !td.id || !data) return;
+  let mm, key, y, m;
+  if ((mm = td.id.match(/^(board|sp6|fly3|fly6|cust)-(.+)-(\d+)$/))) {
+    const mk = data.markets.find(x => x.key === mm[2]), f = mk && mk.legs[+mm[3]];
+    if (!f) return;
+    key = mm[1]; y = f.y; m = f.m;
+  } else if ((mm = td.id.match(/^d-s-(.+)-(\d{4})$/))) { key = "dec1y"; y = +mm[2]; m = 12; }
+  else if ((mm = td.id.match(/^d-(sp6|fly3|fly6|cust)-(.+)-(\d{4})-(\d+)$/))) { key = mm[1]; y = +mm[3]; m = +mm[4]; }
+  else return;
+  openChart(key, y * 12 + m - 1, td.id);
+});
+// Esc closes the front-most chart
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape" || !PANELS.length) return;
+  closePanel(PANELS.reduce((a, b) => (+a.el.style.zIndex > +b.el.style.zIndex ? a : b)));
+});
+
+function setConn(cls, text) {
+  const el = document.getElementById("conn");
+  el.className = `pill ${cls}`;
+  document.getElementById("connText").textContent = text;
+}
+
+async function tick() {
+  try {
+    const r = await fetch("/api/quotes", { cache: "no-store" });
+    data = await r.json();
+    for (const el of document.querySelectorAll(".staleMin")) el.textContent = data.stale_minutes;
+    const banner = document.getElementById("banner");
+    banner.style.display = data.error ? "block" : "none";
+    banner.textContent = data.error || "";
+    const st = data.status || "";
+    if (st.startsWith("CONNECTED") && st.includes("STREAMING")) setConn("live", "Live");
+    else if (st.startsWith("CONNECTED") || st.startsWith("CONNECTING") || st.startsWith("STALLED")) setConn("wait", st.toLowerCase());
+    else setConn("down", st || "Disconnected");
+    const age = data.seconds_since_update;
+    document.getElementById("updated").textContent =
+      `Updated ${new Date().toLocaleTimeString([], { hour12: false })}` +
+      (age != null ? ` · last tick ${age < 1 ? "<1" : Math.round(age)}s ago` : "") + " · streaming";
+    render(); drawCharts();
+  } catch (e) {
+    setConn("down", "Server not reachable");
+  }
+}
+tick();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>

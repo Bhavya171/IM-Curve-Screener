@@ -1,0 +1,18 @@
+# --- secrets: never commit ---
+.env
+*.env
+.msal_token_cache.json
+*token_cache*.json
+
+# --- generated / local ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+instruments_cache.json
+*.log
+
+# --- local editor / assistant settings ---
+.claude/
+.vscode/
+.idea/
