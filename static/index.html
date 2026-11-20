@@ -46,7 +46,7 @@
   th.row small { display: block; color: var(--muted); font-weight: 400; font-size: 11px; }
   th.fly { background: var(--rowhead); text-align: center; font-weight: 600; }
   td.v { text-align: right; min-width: 74px; cursor: default; }
-  td.v .lab { float: left; color: var(--muted); font-size: 10px; margin-right: 8px; line-height: 18px; }
+  td.v .lab { display: inline-block; color: var(--muted); font-size: 10px; margin-right: 8px; vertical-align: 1px; }
   td.v.stale .num { font-style: italic; color: var(--stale); }
   td.err { color: var(--muted); font-style: italic; text-align: center; }
   .note { color: var(--muted); font-size: 12px; margin-top: 10px; }
@@ -100,6 +100,19 @@
   .cp-tip .r i { width: 10px; height: 3px; border-radius: 2px; display: inline-block; }
   .cp-tip .r span:last-child { margin-left: auto; padding-left: 12px; }
   .cp-foot { color: var(--muted); font-size: 11px; padding: 0 14px 8px; }
+  .hdr { cursor: pointer; }
+  .hdr:hover { color: var(--s1); text-decoration: underline; text-underline-offset: 3px; }
+  .cp.candle { width: min(680px, calc(100vw - 32px)); height: 430px; }
+  .cp.candle .cp-plot { cursor: crosshair; touch-action: none; }
+  .cp .tf { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 7px; }
+  .cp .tf button { font: inherit; font-size: 11px; font-weight: 600; color: var(--muted); background: none; border: 0;
+                   border-radius: 5px; padding: 2px 8px; cursor: pointer; }
+  .cp .tf button[aria-pressed="true"] { background: var(--head); color: var(--ink); }
+  .cp-sub { display: flex; gap: 6px; align-items: baseline; padding: 6px 14px 0; font-size: 12px; color: var(--muted);
+            font-variant-numeric: tabular-nums; }
+  .cp-sub .grow { flex: 1; }
+  .cp-sub b { color: var(--ink); }
+  .cp-sub .up { color: rgb(var(--up)); } .cp-sub .down { color: rgb(var(--down)); }
 
   /* ---------- tabs ---------- */
   .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 14px; }
@@ -144,18 +157,77 @@
   .sp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr)); gap: 12px; }
   .sp-card { border: 1px solid var(--line); border-radius: 8px; height: 330px; display: flex; flex-direction: column; min-width: 0; }
   .sp-card .cp-title { padding: 8px 12px 0; flex: 0 0 auto; }
-  #tab-sim td.v { cursor: default; }
-  #tab-sim td.v:hover { outline: none; }
+  #tab-sim td.v, #tab-build td.v { cursor: default; }
+  #tab-sim td.v:hover, #tab-build td.v:hover { outline: none; }
+  body[data-tab="build"] .cp { display: none !important; }
+
+  /* ---------- screener sizing ---------- */
+  .dec { width: auto; font-size: var(--fs, 13px); }
+  .dec th, .dec td { padding: 0 6px; height: var(--rh, 30px); }
+  .dec td.v { min-width: var(--cw, 74px); width: var(--cw, 74px); max-width: var(--cw, 74px); overflow: hidden; }
+  .dec th.row { min-width: 0; }
+  label.ctl input[type=range] { width: 90px; accent-color: var(--s1); }
+  label.ctl output { min-width: 30px; font-variant-numeric: tabular-nums; color: var(--ink); }
+  details.menu { position: relative; }
+  details.menu summary { list-style: none; }
+  details.menu summary::-webkit-details-marker { display: none; }
+  .menu-pop { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; background: var(--card); border: 1px solid var(--line);
+              border-radius: 8px; padding: 8px 10px; box-shadow: 0 8px 24px rgba(0,0,0,.2); min-width: 210px; }
+  .menu-pop label { display: flex; align-items: center; gap: 8px; padding: 3px 0; white-space: nowrap; cursor: pointer; }
+
+  /* ---------- strategy builder ---------- */
+  .btn.primary { background: var(--s1); border-color: var(--s1); color: #fff; font-weight: 600; }
+  .btn.primary:hover { filter: brightness(1.08); background: var(--s1); }
+  .b-h { font-size: 13px; font-weight: 600; margin: 4px 0 8px; }
+  .b-h .meta { font-weight: 400; margin-left: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 14px; }
+  #bQuick { gap: 6px; }
+  .chip-group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .chip-group > .meta { margin-right: 2px; }
+  .chip { font: inherit; font-size: 12px; color: var(--ink); background: var(--card); border: 1px solid var(--line);
+          border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+  .chip:hover { border-color: var(--s1); background: var(--head); }
+  .chip.have { color: var(--muted); }
+  table.b-parts { width: auto; }
+  table.b-parts th, table.b-parts td { padding: 4px 8px; }
+  table.b-parts select { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+  .b-name input { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 6px;
+                  padding: 5px 8px; width: 260px; }
+  .b-formula { font-size: 14px; font-weight: 600; margin: 10px 0 0; font-variant-numeric: tabular-nums; }
+  .b-err { color: var(--bad); font-size: 12px; margin: 4px 0 0; min-height: 16px; }
+  .b-err.ok { color: var(--ok); }
+  table.b-list td, table.b-list th { padding: 6px 10px; }
+  table.b-list td.acts { text-align: right; }
+  table.b-list td.acts .btn { margin-left: 6px; }
+
+  /* ---------- percentile subscripts ---------- */
+  td.v sub.pc { font-size: 0.72em; color: var(--ink); opacity: .7; margin-left: 2px; vertical-align: -0.25em; font-style: normal; font-weight: 400; }
+  td.v sub.pc.thin { font-style: italic; opacity: .5; }
+  td.v sub.pc.lo, td.v sub.pc.hi { font-weight: 700; opacity: 1; text-decoration: underline; text-underline-offset: 2px; }
 </style>
 </head>
 <body>
 <main>
   <header class="topbar">
     <h1>IM Curve Screener</h1>
-    <nav class="tabs" role="tablist" aria-label="Views">
+    <nav class="tabs" role="tablist" aria-label="Views" id="mainTabs">
       <button role="tab" data-tab="screen" aria-selected="true">Screener</button>
+      <button role="tab" data-tab="strips" aria-selected="false">Strips</button>
       <button role="tab" data-tab="sim" aria-selected="false">Curve simulator</button>
+      <button role="tab" data-tab="build" aria-selected="false">Strategy builder</button>
     </nav>
+    <label class="ctl">Show
+      <select id="view">
+        <option value="level" selected>Level (bp)</option>
+        <option value="chg">1-day change (bp)</option>
+      </select>
+    </label>
+    <label class="ctl">Price
+      <select id="basis">
+        <option value="mid" selected>Mid</option>
+        <option value="last">Last trade</option>
+      </select>
+    </label>
     <span class="grow"></span>
     <span class="meta" id="updated">Waiting for data…</span>
     <span class="pill wait" id="conn"><span class="dot"></span><span id="connText">Connecting</span></span>
@@ -165,23 +237,45 @@
   <div id="tab-screen" role="tabpanel">
   <section class="card">
     <div class="bar">
-      <h2 id="boardTitle">Spread board</h2>
+      <h2 id="decTitle">Dec–Dec spreads &amp; flies</h2>
+      <label class="ctl">Years <select id="decYears"></select></label>
+      <label class="ctl" title="Small number in each cell: where the live value sits among the strategy's daily closes over the last N trading days (0 = lowest, 100 = highest)">Percentile
+        <select id="decPct"><option value="0">Off</option><option value="10">10d</option><option value="30">30d</option><option value="60">60d</option>
+          <option value="120">120d</option><option value="240">240d</option><option value="560">560d</option></select></label>
+      <span class="meta" id="pctStatus"></span>
+      <label class="ctl">Cell width <input type="range" id="decCw" min="40" max="160" step="2"><output id="decCwV"></output></label>
+      <label class="ctl">Row height <input type="range" id="decRh" min="16" max="60" step="1"><output id="decRhV"></output></label>
+      <label class="ctl">Font <input type="range" id="decFs" min="9" max="20" step="1"><output id="decFsV"></output></label>
+      <details class="menu"><summary class="btn">Columns ▾</summary><div class="menu-pop" id="decCols"></div></details>
+      <button class="btn" id="decResetSize">Reset size</button>
+    </div>
+    <div class="scroll"><table id="dec" class="dec"></table></div>
+    <p class="note">Each Dec–Dec block lists every structure starting in that year (Dec, Mar, Jun, Sep).
+      Spread = front − back. 3MF = front − 2×middle + back on legs 3M apart (DMJ, MJS, JSD, SDM); 6MF the same on
+      legs 6M apart (DJD, MSM, JDJ, SMS); 1YF the same on legs 1Y apart (DDD = Dec − 2×Dec+1Y + Dec+2Y). This grid holds the quoted structures; custom strategies are in the grid below.
+      All in bp. Hover a cell to see each leg's price.
+      Shading is the change since the previous settlement (green = up, red = down). Italic grey = a leg has no
+      usable price on the chosen basis (no two-sided quote for Mid; for Last, its last trade is over
+      <span class="staleMin">30</span> minutes older than the freshest leg).
+      Click a structure's name in the header for its curve across every market; click a number for that market's candle chart of that one strategy (history from QH). Use Columns to hide groups; sizes are remembered.</p>
+  </section>
+
+  <section class="card" id="decCustCard">
+    <div class="bar"><h2>Custom strategies</h2><span class="meta">same Dec–Dec blocks, sizes and columns as above</span></div>
+    <div class="scroll"><table id="decCust" class="dec"></table></div>
+    <p class="note">6MF − 2×3MF uses the 3MF with the same front leg (DJD − 2DMJ, MSM − 2MJS, JDJ − 2JSD, SMS − 2SDM).
+      Strategies you save in the Strategy builder are added here as extra column groups.</p>
+  </section>
+  </div>
+
+  <div id="tab-strips" role="tabpanel" hidden>
+  <section class="card">
+    <div class="bar">
+      <h2 id="boardTitle" class="hdr" data-curve="board" title="Click for the curve of every market">Spread board</h2>
       <label class="ctl">Spread
         <select id="tenor">
           <option value="3">3M</option><option value="6">6M</option>
           <option value="12" selected>1Y</option><option value="24">2Y</option>
-        </select>
-      </label>
-      <label class="ctl">Show
-        <select id="view">
-          <option value="level" selected>Level (bp)</option>
-          <option value="chg">1-day change (bp)</option>
-        </select>
-      </label>
-      <label class="ctl">Price
-        <select id="basis">
-          <option value="mid" selected>Mid</option>
-          <option value="last">Last trade</option>
         </select>
       </label>
     </div>
@@ -190,38 +284,65 @@
   </section>
 
   <section class="card">
-    <div class="bar"><h2>6M spreads</h2><span class="meta">front − (front+6M) · e.g. DJ = Dec − Jun</span></div>
+    <div class="bar"><h2 class="hdr" data-curve="sp6" title="Click for the curve of every market">6M spreads</h2><span class="meta">front − (front+6M) · e.g. DJ = Dec − Jun</span></div>
     <div class="scroll"><table id="sp6"></table></div>
   </section>
 
   <section class="card">
-    <div class="bar"><h2>3M flies (3MF)</h2><span class="meta">front − 2×(front+3M) + (front+6M) · e.g. DMJ</span></div>
+    <div class="bar"><h2 class="hdr" data-curve="fly3" title="Click for the curve of every market">3M flies (3MF)</h2><span class="meta">front − 2×(front+3M) + (front+6M) · e.g. DMJ</span></div>
     <div class="scroll"><table id="fly3"></table></div>
   </section>
 
   <section class="card">
-    <div class="bar"><h2>6M flies (6MF)</h2><span class="meta">front − 2×(front+6M) + (front+12M) · e.g. DJD</span></div>
+    <div class="bar"><h2 class="hdr" data-curve="fly6" title="Click for the curve of every market">6M flies (6MF)</h2><span class="meta">front − 2×(front+6M) + (front+12M) · e.g. DJD</span></div>
     <div class="scroll"><table id="fly6"></table></div>
   </section>
 
   <section class="card">
-    <div class="bar"><h2>6MF − 2×3MF</h2><span class="meta">6M fly minus twice the 3M fly with the same front leg ·
-      e.g. JDJ − 2×JSD = −Jun + 4·Sep − 4·Dec + Jun (weights −1, 4, −4, 1)</span></div>
-    <div class="scroll"><table id="cust"></table></div>
-    <p class="note">All strips: S1 starts at the first live quarterly, S2 one quarter later, and so on; the small
-      label is the structure's name (D/M/J/S = Dec/Mar/Jun/Sep) and the front year. Hover a cell for every leg.</p>
+    <div class="bar"><h2 class="hdr" data-curve="fly12" title="Click for the curve of every market">1Y flies (1YF)</h2><span class="meta">front − 2×(front+1Y) + (front+2Y) · e.g. Dec26 − 2×Dec27 + Dec28</span></div>
+    <div class="scroll"><table id="fly12"></table></div>
   </section>
 
   <section class="card">
-    <div class="bar"><h2 id="decTitle">Dec–Dec spreads &amp; flies</h2></div>
-    <div class="scroll"><table id="dec"></table></div>
-    <p class="note">Each Dec–Dec block lists every structure starting in that year (Dec, Mar, Jun, Sep).
-      Spread = front − back. 3MF = front − 2×middle + back on legs 3M apart (DMJ, MJS, JSD, SDM); 6MF the same on
-      legs 6M apart (DJD, MSM, JDJ, SMS); 6MF − 2×3MF uses the 3MF with the same front leg (DJD − 2DMJ, MSM − 2MJS, JDJ − 2JSD, SMS − 2SDM). All in bp. Hover a cell to see each leg's price.
-      Shading is the change since the previous settlement (green = up, red = down). Italic grey = a leg has no
-      usable price on the chosen basis (no two-sided quote for Mid; for Last, its last trade is over
-      <span class="staleMin">30</span> minutes older than the freshest leg).
-      Click any cell to chart that structure's curve for every market.</p>
+    <div class="bar"><h2 class="hdr" data-curve="cust" title="Click for the curve of every market">6MF − 2×3MF</h2><span class="meta">6M fly minus twice the 3M fly with the same front leg ·
+      e.g. JDJ − 2×JSD = −Jun + 4·Sep − 4·Dec + Jun (weights −1, 4, −4, 1)</span></div>
+    <div class="scroll"><table id="cust"></table></div>
+    <p class="note">All strips: S1 starts at the first live quarterly, S2 one quarter later, and so on; the small
+      label is the structure's name (D/M/J/S = Dec/Mar/Jun/Sep) and the front year. Hover a cell for every leg.
+      Click a strip's title for its curve across every market; click a number for that strategy's candle chart.</p>
+  </section>
+
+  <div id="customStrips"></div>
+  </div>
+
+  <div id="tab-build" role="tabpanel" hidden>
+  <section class="card">
+    <div class="bar"><h2 id="bTitle">New strategy</h2></div>
+    <h3 class="b-h">Quick picks <span class="meta">one click fills it in, then Save</span></h3>
+    <div class="chips" id="bQuick"></div>
+    <h3 class="b-h">Or combine structures <span class="meta">click a structure to add it · change the multiplier (e.g. −2×) or when it starts · everything starts on the same front contract unless you change "Starts"</span></h3>
+    <div class="chips" id="bBlocks"></div>
+    <table class="b-parts" id="bParts"></table>
+    <div class="bar" style="margin:12px 0 0">
+      <label class="ctl b-name">Name <input type="text" id="bName" maxlength="40" autocomplete="off" placeholder="named automatically"></label>
+      <span class="grow"></span>
+      <button class="btn" id="bClear">Clear</button>
+      <button class="btn" id="bCancel" hidden>Cancel edit</button>
+      <button class="btn primary" id="bSave">Save strategy</button>
+    </div>
+    <p class="b-formula" id="bFormula"></p>
+    <p class="b-err" id="bErr" role="status"></p>
+    <h3 class="meta" style="margin:10px 0 6px">Live preview · every market</h3>
+    <div class="scroll"><table id="bprev"></table></div>
+    <p class="note">Spread = front − back; fly = front − 2×middle + back; condor = front − 2nd − 3rd + 4th; double fly = front − 3×2nd + 3×3rd − 4th
+      (legs 3M, 6M, 9M, 1Y or 2Y apart). Combined structures add up leg by leg, e.g. 1Y fly − 2×6MF on Dec26 =
+      −Dec26 + 4×Jun27 − 4×Dec27 + Dec28. A saved strategy is added everywhere: a column group in the Screener, its own
+      strip in Strips, a clickable curve chart, and in the Curve simulator as inputs you can type, a chart and a table.
+      Saved strategies can also be used as building blocks. They're saved in this browser.</p>
+  </section>
+  <section class="card">
+    <div class="bar"><h2>Your strategies</h2></div>
+    <div id="bList"></div>
   </section>
   </div>
 
@@ -264,11 +385,13 @@
       <h3 class="meta" style="margin:14px 0 6px">3M flies (3MF)</h3><div class="scroll"><table id="sim-fly3"></table></div>
       <h3 class="meta" style="margin:14px 0 6px">6M flies (6MF)</h3><div class="scroll"><table id="sim-fly6"></table></div>
       <h3 class="meta" style="margin:14px 0 6px">6MF − 2×3MF (same front)</h3><div class="scroll"><table id="sim-cust"></table></div>
+      <div id="simCustomTables"></div>
       <p class="note">The simulated curve keeps each market's first contract at its live price and rebuilds every later
         contract from the 3M spreads, so every spread and fly here follows from your inputs. Live prices use the
         Price setting on the Screener tab (mid or last trade). Tick "Hold live reference" to stop the live defaults moving while you work.</p>
     </section>
   </div>
+
 </main>
 
 
@@ -295,6 +418,9 @@ const fmtPx = x => x == null ? "—" : String(+x.toFixed(5));
 const fmtT = t => t == null ? "—" : new Date(t).toLocaleTimeString([], { hour12: false });
 const ymAdd = (y, m, k) => { const t = y * 12 + (m - 1) + k; return [Math.floor(t / 12), (t % 12) + 1]; };
 const find = (mk, y, m) => mk.legs.find(l => l.y === y && l.m === m) || null;
+const yy2 = y => String(y % 100).padStart(2, "0");
+const lab = (y, m) => `${MONTHS[m - 1]}${yy2(y)}`;
+const esc = x => String(x).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const tenorName = t => t % 12 === 0 ? `${t / 12}Y` : `${t}M`;
 
 function legPrice(l) {
@@ -377,11 +503,38 @@ const STRUCT = {
           name: (y, m) => ymsAt(y, m, [0, 3, 6]).map(([, mm]) => letter(mm)).join("") },
   fly6: { offs: [0, 6, 12], w: [1, -2, 1], floor: 1,
           name: (y, m) => ymsAt(y, m, [0, 6, 12]).map(([, mm]) => letter(mm)).join("") },
+  fly12: { offs: [0, 12, 24], w: [1, -2, 1], floor: 2,
+          name: (y, m) => ymsAt(y, m, [0, 12, 24]).map(([, mm]) => letter(mm)).join("") },
   // 6MF − 2×3MF with the same front leg: (Q0 − 2Q6 + Q12) − 2(Q0 − 2Q3 + Q6) = −Q0 + 4Q3 − 4Q6 + Q12
   cust: { offs: [0, 3, 6, 12], w: [-1, 4, -4, 1], floor: 0.5,
           name: (y, m) => { const L = ymsAt(y, m, [0, 3, 6, 12]).map(([, mm]) => letter(mm));
                             return `${L[0]}${L[2]}${L[3]}−2${L[0]}${L[1]}${L[2]}`; } },
 };
+const BUILTIN = ["sp6", "fly3", "fly6", "fly12", "cust"];
+const BUILTIN_TITLE = { sp3: "3M spreads", sp6: "6M spreads", fly3: "3M flies (3MF)", fly6: "6M flies (6MF)", fly12: "1Y flies (1YF)", cust: "6MF − 2×3MF (same front)" };
+
+// ---------- custom strategies (Strategy builder) ----------
+// { key, name, legs: [{ off (months from the front, multiple of 3), w }] }, saved in this browser.
+// Each one becomes a STRUCT entry, so it shows up wherever the built-in structures do.
+let CUSTOM = [];
+try { CUSTOM = JSON.parse(localStorage.getItem("customStrategies") || "[]"); } catch (e) {}
+const customKeys = () => CUSTOM.map(c => c.key);
+const allKeys = () => [...BUILTIN, ...customKeys()];
+const structTitle = k => (STRUCT[k] && STRUCT[k].title) || BUILTIN_TITLE[k] || k;
+const legLetters = (y, m, offs) => ymsAt(y, m, offs).map(([, mm]) => letter(mm)).join("");
+// the legs written out on a Dec26 front, e.g. "Dec26 − 2×Jun27 + Dec27"
+const legsText = (offs, w, y = 2026, m = 12) => ymsAt(y, m, offs).map(([yy, mm], i) =>
+  `${w[i] < 0 ? (i ? " − " : "−") : i ? " + " : ""}${Math.abs(w[i]) === 1 ? "" : +Math.abs(w[i]).toFixed(4) + "×"}${lab(yy, mm)}`).join("");
+const formulaOf = (offs, w) => `${legLetters(2026, 12, offs)}26 = ${legsText(offs, w)}`;
+function syncStructs() {
+  for (const k of Object.keys(STRUCT)) if (STRUCT[k].custom) delete STRUCT[k];
+  for (const c of CUSTOM) {
+    const offs = c.legs.map(l => l.off), w = c.legs.map(l => l.w);
+    STRUCT[c.key] = { offs, w, floor: 1, custom: true, title: c.name, name: (y, m) => legLetters(y, m, offs) };
+  }
+}
+syncStructs();
+const saveCustom = () => { try { localStorage.setItem("customStrategies", JSON.stringify(CUSTOM)); } catch (e) {} syncStructs(); };
 
 // One row per market, S1..S12 = structure starting at each live quarterly in turn.
 function renderStrip(tableId, offs, w, floor, nameOf, markets, view = S.view) {
@@ -409,78 +562,173 @@ function renderStrip(tableId, offs, w, floor, nameOf, markets, view = S.view) {
   paint(cells, floor, view);
 }
 
-function render() {
+// ---------- Strips tab ----------
+function syncCustomStrips() {
+  const host = document.getElementById("customStrips");
+  const sig = JSON.stringify(CUSTOM);
+  if (host.dataset.sig === sig) return;
+  host.innerHTML = CUSTOM.map(c => {
+    const st = STRUCT[c.key];
+    return `<section class="card"><div class="bar"><h2 class="hdr" data-curve="${c.key}" title="Click for the curve of every market">${esc(c.name)}</h2>` +
+           `<span class="meta">your strategy${c.desc && c.desc !== c.name ? ` (${esc(c.desc)})` : ""} · e.g. ${formulaOf(st.offs, st.w)}</span></div>` +
+           `<div class="scroll"><table id="${c.key}"></table></div></section>`;
+  }).join("");
+  host.dataset.sig = sig;
+}
+
+function renderStrips() {
   if (!data) return;
   const markets = data.markets;
-  const live = markets.filter(m => !m.error && m.legs.length);
-  const yy = y => String(y % 100).padStart(2, "0");
-
-  // ---------- strips ----------
-  renderStrip("board", [0, S.tenor], [1, -1], 2, f => `${letter(f.m)}${yy(f.y)}`, markets);
-  for (const id of ["sp6", "fly3", "fly6", "cust"]) {
+  renderStrip("board", [0, S.tenor], [1, -1], 2, f => `${letter(f.m)}${yy2(f.y)}`, markets);
+  syncCustomStrips();
+  for (const id of allKeys()) {
     const st = STRUCT[id];
-    renderStrip(id, st.offs, st.w, st.floor, f => `${st.name(f.y, f.m)}${yy(f.y)}`, markets);
+    renderStrip(id, st.offs, st.w, st.floor, f => `${st.name(f.y, f.m)}${yy2(f.y)}`, markets);
   }
   document.getElementById("boardTitle").textContent = `Spread board · ${tenorName(S.tenor)} calendars`;
   document.getElementById("boardNote").textContent =
     `S1 = the first live quarterly against the contract ${tenorName(S.tenor)} later, S2 starts one quarter on, and so on ` +
     `(the small label is the front leg). Spread = front − back in bp, from each leg's ${S.basis === "mid" ? "mid" : "last trade"}. ` +
     `Shading = change since the previous settlement (green = spread up, red = down). Italic grey = a leg's price is not on the chosen basis or is stale.`;
+}
 
-  // ---------- Dec-Dec spreads & flies ----------
+// ---------- Screener tab: Dec–Dec spreads & flies, with adjustable size ----------
+const DL_DEFAULT = { years: 3, cw: 74, rh: 30, fs: 13, hide: [], pct: 60 };
+const DL = { ...DL_DEFAULT };
+try { Object.assign(DL, JSON.parse(localStorage.getItem("screenerLayout") || "{}")); } catch (e) {}
+const saveDL = () => { try { localStorage.setItem("screenerLayout", JSON.stringify(DL)); } catch (e) {} };
+const DEC_GROUPS = () => [
+  { key: "dd", title: "Dec–Dec spread" },
+  { key: "sp6", title: "6M spread", short: "6MS" }, { key: "fly3", title: "3M fly", short: "3MF" },
+  { key: "fly6", title: "6M fly", short: "6MF" }, { key: "fly12", title: "1Y fly", short: "1YF" },
+  // custom strategies (not quoted on the exchange) go in the second grid
+  { key: "cust", title: "6MF − 2×3MF", short: "6MF−2×3MF", custom: true },
+  ...CUSTOM.map(c => ({ key: c.key, title: c.name, short: c.name, custom: true })),
+];
+
+function applyDecSize() {
+  for (const t of document.querySelectorAll("table.dec")) {
+    t.style.setProperty("--cw", `${DL.cw}px`);
+    t.style.setProperty("--rh", `${DL.rh}px`);
+    t.style.setProperty("--fs", `${DL.fs}px`);
+  }
+  for (const [id, k] of [["decCw", "cw"], ["decRh", "rh"], ["decFs", "fs"]]) {
+    document.getElementById(id).value = DL[k];
+    document.getElementById(id + "V").textContent = `${DL[k]}px`;
+  }
+  document.getElementById("decYears").value = DL.years;
+}
+
+function renderDecCols() {
+  const host = document.getElementById("decCols");
+  const html = DEC_GROUPS().map(g =>
+    `<label><input type="checkbox" data-g="${g.key}"${DL.hide.includes(g.key) ? "" : " checked"}> ${esc(g.title)}</label>`).join("");
+  if (host.dataset.html !== html) { host.innerHTML = html; host.dataset.html = html; }
+}
+
+(() => {
+  const ys = document.getElementById("decYears");
+  ys.innerHTML = Array.from({ length: 8 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("");
+  for (const [id, k] of [["decCw", "cw"], ["decRh", "rh"], ["decFs", "fs"]]) {
+    document.getElementById(id).addEventListener("input", e => { DL[k] = +e.target.value; applyDecSize(); saveDL(); });
+  }
+  ys.addEventListener("change", () => { DL.years = +ys.value; saveDL(); refresh(); });
+  const pc = document.getElementById("decPct");
+  pc.value = String(DL.pct);
+  pc.addEventListener("change", () => { DL.pct = +pc.value; saveDL(); refresh(); });
+  document.getElementById("decCols").addEventListener("change", e => {
+    const g = e.target.dataset.g;
+    if (!g) return;
+    DL.hide = e.target.checked ? DL.hide.filter(x => x !== g) : [...DL.hide, g];
+    saveDL(); refresh();
+  });
+  document.getElementById("decResetSize").addEventListener("click", () => {
+    Object.assign(DL, { cw: DL_DEFAULT.cw, rh: DL_DEFAULT.rh, fs: DL_DEFAULT.fs });
+    applyDecSize(); saveDL();
+  });
+  // close the Columns menu when clicking elsewhere
+  document.addEventListener("click", e => {
+    const d = document.querySelector("details.menu[open]");
+    if (d && !d.contains(e.target)) d.open = false;
+  });
+  applyDecSize();
+})();
+
+function renderDec() {
+  if (!data) return;
+  renderDecCols();
+  const live = data.markets.filter(m => !m.error && m.legs.length);
   const decs = live.map(m => m.legs.find(l => l.m === 12)).filter(Boolean).map(l => l.y);
-  const dec = document.getElementById("dec");
-  if (!live.length || !decs.length) { dec.innerHTML = `<tbody><tr><td class="err">No live markets yet.</td></tr></tbody>`; return; }
+  const dec = document.getElementById("dec"), decCust = document.getElementById("decCust");
+  const custCard = document.getElementById("decCustCard");
+  if (!live.length || !decs.length) {
+    dec.innerHTML = `<tbody><tr><td class="err">No live markets yet.</td></tr></tbody>`; dec.dataset.sig = "";
+    custCard.hidden = true; return;
+  }
   const y0 = Math.min(...decs);
   document.getElementById("decTitle").textContent = `Dec–Dec spreads & flies · ${live.map(m => m.key).join(", ")}`;
+  if (DL.pct) for (const mk of live) loadPctHist(mk);
+  renderPctStatus();
+  const visible = DEC_GROUPS().filter(g => !DL.hide.includes(g.key) && (g.key === "dd" || STRUCT[g.key]));
+  renderDecGrid(dec, visible.filter(g => !g.custom), live, y0);
+  const custGroups = visible.filter(g => g.custom);
+  custCard.hidden = !custGroups.length;
+  if (custGroups.length) renderDecGrid(decCust, custGroups, live, y0);
+}
+
+// a Screener cell: value plus a subscript for its percentile
+const pcCell = id => cellHtml(id).replace("</td>", '<sub class="pc"></sub></td>');
+
+// One Dec–Dec grid: a row block per year, a column group per structure (the Dec–Dec spread spans the block).
+function renderDecGrid(dec, groups, live, y0) {
+  const showDD = groups.some(g => g.key === "dd"), keys = groups.filter(g => g.key !== "dd");
   const decCells = [];
   const mh = live.map(m => `<th>${m.key}</th>`).join("");
-  let d = `<thead><tr><th rowspan="2"></th><th colspan="${live.length}">Dec–Dec spread</th>` +
-          `<th rowspan="2">6MS</th><th colspan="${live.length}">6M spread</th>` +
-          `<th rowspan="2">3MF</th><th colspan="${live.length}">3M fly</th>` +
-          `<th rowspan="2">6MF</th><th colspan="${live.length}">6M fly</th>` +
-          `<th rowspan="2">6MF−2×3MF</th><th colspan="${live.length}">6MF − 2×3MF</th></tr>` +
-          `<tr>${mh}${mh}${mh}${mh}${mh}</tr></thead><tbody>`;
+  let d = `<thead><tr><th rowspan="2"></th>` +
+          (showDD ? `<th colspan="${live.length}" class="hdr" data-curve="dec1y" title="Click for the Dec–Dec curve of every market">Dec–Dec spread</th>` : "") +
+          keys.map(g => `<th rowspan="2" class="hdr" data-curve="${g.key}" title="Click for the ${esc(g.title)} curve of every market">${esc(g.short)}</th>` +
+                        `<th colspan="${live.length}" class="hdr" data-curve="${g.key}" title="Click for the ${esc(g.title)} curve of every market">${esc(g.title)}</th>`).join("") +
+          `</tr><tr>${mh.repeat(groups.length)}</tr></thead><tbody>`;
   // every structure starting in the block: Dec(y), Mar, Jun, Sep(y+1)
   const starts = [[0, 12], [1, 3], [1, 6], [1, 9]];
   const desc = (mk, legs, w, nm) => legs.every(Boolean)
     ? combo(mk, legs, w, `${mk.key} ${nm} (${legs.map(l => l.label).join("/")})`) : null;
-  for (let y = y0; y < y0 + 3; y++) {
-    const name = `Dec${yy(y)}–Dec${yy(y + 1)}`;
+  for (let y = y0; y < y0 + DL.years; y++) {
+    const name = `Dec${yy2(y)}–Dec${yy2(y + 1)}`;
     starts.forEach(([dy, m], si) => {
       const sy = y + dy;
       d += "<tr>";
       if (si === 0) {
         d += `<th class="row" rowspan="${starts.length}">${name}</th>`;
-        for (const mk of live) {
-          const id = `d-s-${mk.key}-${y}`;
-          d += cellHtml(id).replace('<td class="v"', `<td class="v" rowspan="${starts.length}"`);
-          decCells.push({ id, r: desc(mk, [find(mk, y, 12), find(mk, y + 1, 12)], [1, -1], `${name} spread`) });
+        if (showDD) for (const mk of live) {
+          const id = `d-s-${mk.key}-${y}`, legs = [find(mk, y, 12), find(mk, y + 1, 12)];
+          d += pcCell(id).replace('<td class="v"', `<td class="v" rowspan="${starts.length}"`);
+          decCells.push({ id, mk, legs, w: [1, -1], r: desc(mk, legs, [1, -1], `${name} spread`) });
         }
       }
-      for (const key of ["sp6", "fly3", "fly6", "cust"]) {
+      for (const { key } of keys) {
         const st = STRUCT[key], nm = st.name(sy, m);
         d += `<th class="fly">${nm}</th>`;
         for (const mk of live) {
           const id = `d-${key}-${mk.key}-${sy}-${m}`;
-          d += cellHtml(id);
-          decCells.push({ id, g: key, r: desc(mk, legsAt(mk, sy, m, st.offs), st.w, nm) });
+          const legs = legsAt(mk, sy, m, st.offs);
+          d += pcCell(id);
+          decCells.push({ id, g: key, mk, legs, w: st.w, r: desc(mk, legs, st.w, st.custom ? `${st.title} ${nm}` : nm) });
         }
       }
       d += "</tr>";
     });
   }
   d += "</tbody>";
-  const decSig = JSON.stringify([y0, live.map(m => m.key)]);
-  if (dec.dataset.sig !== decSig) { dec.innerHTML = d; dec.dataset.sig = decSig; }
+  const decSig = JSON.stringify([y0, DL.years, live.map(m => m.key), groups.map(g => g.key), groups.some(g => g.custom) ? CUSTOM : 0]);
+  if (dec.dataset.sig !== decSig) { dec.innerHTML = d; dec.dataset.sig = decSig; markCharted(); }
   // shade each structure type on its own scale so small fly moves still show next to the spreads
   paint(decCells.filter(c => !c.g), 2);
-  for (const key of ["sp6", "fly3", "fly6", "cust"]) paint(decCells.filter(c => c.g === key), STRUCT[key].floor);
+  for (const { key } of keys) paint(decCells.filter(c => c.g === key), STRUCT[key].floor);
+  paintPct(decCells);
 }
 
 // ======================= floating curve charts (one panel per structure) =======================
-const yy2 = y => String(y % 100).padStart(2, "0");
-const lab = (y, m) => `${MONTHS[m - 1]}${yy2(y)}`;
 const tYM = t => [Math.floor(t / 12), (t % 12) + 1];
 const PANELS = [];          // open chart panels
 let topZ = 50;
@@ -494,8 +742,8 @@ function chartDef(key) {
              nameAt: (y, m) => { const [by, bm] = ymAdd(y, m, t); return `${lab(y, m)}–${lab(by, bm)}`; } };
   }
   const st = STRUCT[key];
-  const titles = { sp3: "3M spreads", sp6: "6M spreads", fly3: "3M flies (3MF)", fly6: "6M flies (6MF)", cust: "6MF − 2×3MF (same front)" };
-  return { title: titles[key], offs: st.offs, w: st.w, nameAt: (y, m) => `${st.name(y, m)} ${lab(y, m)}` };
+  if (!st) return null;   // a custom strategy that was deleted
+  return { title: structTitle(key), offs: st.offs, w: st.w, nameAt: (y, m) => `${st.name(y, m)} ${lab(y, m)}` };
 }
 // the 1Y Dec-Dec spread and the board share a chart only when the board is on 1Y
 const chartKey = key => (key === "board" && S.tenor === 12 ? "dec1y" : key);
@@ -550,7 +798,13 @@ function makePanel(key) {
   el.addEventListener("pointerdown", () => raise(p));
   el.querySelector(".cp-x").addEventListener("click", () => closePanel(p));
   attachPanelEvents(p);
+  enableDrag(p);
+  return p;
+}
 
+// drag a floating panel by its header
+function enableDrag(p) {
+  const el = p.el;
   let drag = null;
   p.head.addEventListener("pointerdown", e => {
     if (e.target.closest("button")) return;
@@ -564,7 +818,6 @@ function makePanel(key) {
     el.style.top = `${Math.min(Math.max(0, drag.oy + e.clientY - drag.sy), innerHeight - 40)}px`;
   });
   p.head.addEventListener("pointerup", () => { drag = null; });
-  return p;
 }
 
 // Legend toggles, hover crosshair and redraw-on-resize: shared by floating panels and simulator charts.
@@ -615,7 +868,10 @@ function drawCharts() {
 
 function drawPanel(p) {
   if (!data || !p.el.isConnected) return;
-  const def = chartDef(p.key), lvl = p.sim || S.view === "level";
+  if (p.candle) return drawCandle(p);
+  const def = chartDef(p.key);
+  if (!def) return;
+  const lvl = p.sim || S.view === "level";
   p.title.innerHTML = p.sim
     ? `${def.title}<small>bp · solid = sim · dashed = live</small>`
     : `${def.title}<small>${lvl ? "level" : "1-day change"} · bp · ${S.basis === "mid" ? "mid" : "last trade"}</small>`;
@@ -726,25 +982,276 @@ function updateTip(p) {
   tip.style.top = `${Math.max(0, Math.min(my - th / 2, p.plot.clientHeight - th))}px`;
 }
 
-// open (or refocus) a chart from any value cell
+// Click a number → that market's candle chart for that one strategy; click a header / strategy name → the curve.
 document.addEventListener("click", e => {
+  if (!data || e.target.closest("#tab-sim, #tab-build, .cp")) return;
+  const h = e.target.closest("[data-curve]");
+  if (h) { openChart(h.dataset.curve, null, null); return; }
   const td = e.target.closest("td.v");
-  if (!td || !td.id || !data) return;
-  let mm, key, y, m;
-  if ((mm = td.id.match(/^(board|sp6|fly3|fly6|cust)-(.+)-(\d+)$/))) {
+  if (!td || !td.id) return;
+  let mm, key, mkKey, y, m;
+  if ((mm = td.id.match(/^d-s-([^-]+)-(\d{4})$/))) { key = "dec1y"; mkKey = mm[1]; y = +mm[2]; m = 12; }
+  else if ((mm = td.id.match(/^d-([a-z][a-z0-9]*)-([^-]+)-(\d{4})-(\d+)$/)) && STRUCT[mm[1]]) { key = mm[1]; mkKey = mm[2]; y = +mm[3]; m = +mm[4]; }
+  else if ((mm = td.id.match(/^([a-z][a-z0-9]*)-([^-]+)-(\d+)$/)) && (mm[1] === "board" || STRUCT[mm[1]])) {
     const mk = data.markets.find(x => x.key === mm[2]), f = mk && mk.legs[+mm[3]];
     if (!f) return;
-    key = mm[1]; y = f.y; m = f.m;
-  } else if ((mm = td.id.match(/^d-s-(.+)-(\d{4})$/))) { key = "dec1y"; y = +mm[2]; m = 12; }
-  else if ((mm = td.id.match(/^d-(sp6|fly3|fly6|cust)-(.+)-(\d{4})-(\d+)$/))) { key = mm[1]; y = +mm[3]; m = +mm[4]; }
-  else return;
-  openChart(key, y * 12 + m - 1, td.id);
+    key = mm[1]; mkKey = mm[2]; y = f.y; m = f.m;
+  } else return;
+  openCandle(mkKey, key, y, m, td.id);
 });
 // Esc closes the front-most chart
 document.addEventListener("keydown", e => {
-  if (e.key !== "Escape" || !PANELS.length || TAB !== "screen") return;
+  if (e.key !== "Escape" || !PANELS.length || (TAB !== "screen" && TAB !== "strips")) return;
   closePanel(PANELS.reduce((a, b) => (+a.el.style.zIndex > +b.el.style.zIndex ? a : b)));
 });
+
+// ======================= strategy candle charts (history from QH) =======================
+// QH has OHLC per contract only. A strategy's candle is built from its legs' bars one step finer
+// (1D from 1H bars, 1H from 5M, 5M from 1M): at every bar, value = Σ weight × price; the candle's open is the first
+// bar's open, close the last bar's close, high / low the extremes of those values. A leg with no bar at some time
+// keeps its last close. The last candle follows the live price.
+const CANDLE_TF = {
+  "5M": { base: "1M", count: 1500, ms: 300e3, foot: "1-minute" },
+  "1H": { base: "5M", count: 2000, ms: 3600e3, foot: "5-minute" },
+  "1D": { base: "1H", count: 3000, ms: 86400e3, foot: "hourly" },
+};
+let candleTf = "1D";
+try { const t = localStorage.getItem("candleTf"); if (CANDLE_TF[t]) candleTf = t; } catch (e) {}
+// trading day: UTC date 2h ahead, so CME's evening open (23:00 UTC) counts toward the next day
+const periodOf = (tf, t) => (tf === "1D" ? Math.floor((t + 7200e3) / 86400e3) : Math.floor(t / CANDLE_TF[tf].ms));
+
+function buildCandles(barsBy, codes, w, bp, tf) {
+  const maps = codes.map(c => new Map((barsBy[c] || []).map(b => [b[0], b])));
+  const times = [...new Set(codes.flatMap(c => (barsBy[c] || []).map(b => b[0])))].sort((a, b) => a - b);
+  const last = codes.map(() => null), out = [];
+  let cur = null;
+  for (const t of times) {
+    let o = 0, c = 0, ok = true;
+    codes.forEach((code, i) => {
+      const b = maps[i].get(t);
+      const bo = b ? b[1] ?? b[4] : last[i], bc = b ? b[4] ?? b[1] : last[i];
+      if (b && bc != null) last[i] = bc;
+      if (bo == null || bc == null) { ok = false; return; }
+      o += w[i] * bo; c += w[i] * bc;
+    });
+    if (!ok) continue;
+    o = r4(o * bp); c = r4(c * bp);
+    const p = periodOf(tf, t);
+    if (!cur || cur.p !== p) { cur = { p, t, o, h: Math.max(o, c), l: Math.min(o, c), c }; out.push(cur); }
+    else { cur.h = Math.max(cur.h, o, c); cur.l = Math.min(cur.l, o, c); cur.c = c; }
+  }
+  return out;
+}
+
+function candleSpec(mkKey, key, y, m) {
+  const mk = data.markets.find(x => x.key === mkKey), def = chartDef(key);
+  if (!mk || !def) return null;
+  const legs = legsAt(mk, y, m, def.offs);
+  const name = key === "dec1y" || key === "board" ? def.nameAt(y, m) : `${STRUCT[key].name(y, m)}${yy2(y)}`;
+  return { mk, def, legs, name, title: key === "dec1y" ? "Dec–Dec spread" : key === "board" ? def.title : structTitle(key) };
+}
+
+function openCandle(mkKey, key, y, m, cellId) {
+  const pk = `k|${mkKey}|${key}|${y}-${m}`;
+  let p = PANELS.find(x => x.key === pk);
+  if (!p) {
+    const spec = candleSpec(mkKey, key, y, m);
+    if (!spec || spec.legs.some(l => !l)) return;
+    p = makeCandlePanel(pk, { mkKey, key, y, m });
+  }
+  p.cellId = cellId;
+  raise(p); markCharted(); drawPanel(p);
+}
+
+function makeCandlePanel(key, ref) {
+  const el = document.createElement("div");
+  el.className = "cp open candle";
+  el.setAttribute("role", "dialog");
+  el.innerHTML =
+    `<div class="cp-head"><div class="cp-title"></div><div class="tf" role="group" aria-label="Candle size">` +
+    Object.keys(CANDLE_TF).map(t => `<button data-tf="${t}">${t}</button>`).join("") + `</div>` +
+    `<button class="cp-x" title="Close" aria-label="Close chart">×</button></div>` +
+    `<div class="cp-sub"></div>` +
+    `<div class="cp-plot"><svg role="img"></svg><div class="cp-tip"></div></div>` +
+    `<div class="cp-foot"></div>`;
+  document.body.appendChild(el);
+  const p = { key, el, candle: ref, tf: candleTf, cellId: null, raw: null, err: null, loading: false, fetchedAt: 0,
+              view: { n: null, end: 0 }, hoverI: null, mouse: null, geom: null,
+              head: el.querySelector(".cp-head"), title: el.querySelector(".cp-title"), sub: el.querySelector(".cp-sub"),
+              plot: el.querySelector(".cp-plot"), svg: el.querySelector("svg"), tip: el.querySelector(".cp-tip"),
+              foot: el.querySelector(".cp-foot") };
+  const n = PANELS.length, w = el.offsetWidth, h = el.offsetHeight;
+  Object.assign(el.style, { right: "auto", bottom: "auto",
+    left: `${Math.max(8, innerWidth - w - 24 - n * 32)}px`, top: `${Math.max(8, innerHeight - h - 24 - n * 32)}px` });
+  PANELS.push(p);
+  el.addEventListener("pointerdown", () => raise(p));
+  el.querySelector(".cp-x").addEventListener("click", () => closePanel(p));
+  el.querySelector(".tf").addEventListener("click", e => {
+    const b = e.target.closest("button[data-tf]");
+    if (!b || b.dataset.tf === p.tf) return;
+    p.tf = candleTf = b.dataset.tf;
+    try { localStorage.setItem("candleTf", candleTf); } catch (err) {}
+    p.raw = null; p.err = null; p.view = { n: null, end: 0 };
+    drawPanel(p);
+  });
+  enableDrag(p);
+
+  // wheel = zoom (number of candles), drag on the plot = pan back in time
+  p.plot.addEventListener("wheel", e => {
+    const G = p.geom;
+    if (!G) return;
+    e.preventDefault();
+    p.view.n = Math.max(10, Math.min(G.total, Math.round(G.n * (e.deltaY > 0 ? 1.15 : 1 / 1.15))));
+    p.view.end = Math.min(p.view.end, Math.max(0, G.total - p.view.n));
+    drawPanel(p);
+  }, { passive: false });
+  let pan = null;
+  p.plot.addEventListener("pointerdown", e => { if (p.geom) { pan = { x: e.clientX, end: p.view.end }; p.plot.setPointerCapture(e.pointerId); } });
+  p.plot.addEventListener("pointerup", () => { pan = null; });
+  p.plot.addEventListener("mousemove", e => {
+    const G = p.geom;
+    if (!G) return;
+    const rc = p.plot.getBoundingClientRect(), mx = e.clientX - rc.left;
+    if (pan) {
+      const d = Math.round((e.clientX - pan.x) / G.slot);
+      const end = Math.max(0, Math.min(G.total - G.n, pan.end + d));
+      if (end !== p.view.end) { p.view.end = end; drawPanel(p); }
+      return;
+    }
+    p.mouse = [mx, e.clientY - rc.top];
+    const i = Math.max(0, Math.min(G.vis.length - 1, Math.floor((mx - G.x0) / G.slot)));
+    if (i !== p.hoverI) { p.hoverI = i; drawPanel(p); } else updateCandleTip(p);
+  });
+  p.plot.addEventListener("mouseleave", () => { p.hoverI = null; p.mouse = null; drawPanel(p); });
+  p.ro = new ResizeObserver(() => drawPanel(p));
+  p.ro.observe(p.plot);
+  return p;
+}
+
+async function loadCandles(p, spec) {
+  if (p.loading) return;
+  p.loading = true;
+  const tf = p.tf, T = CANDLE_TF[tf];
+  try {
+    const r = await fetch(`/api/ohlc?codes=${encodeURIComponent(spec.legs.map(l => l.code).join(","))}&interval=${T.base}&count=${T.count}`, { cache: "no-store" });
+    const j = await r.json();
+    if (tf !== p.tf) return;                    // switched while loading
+    if (j.error) { p.err = j.error; p.needToken = !!j.need_token; }
+    else { p.raw = j.bars; p.err = null; }
+  } catch (e) {
+    p.err = "Could not reach the screener server.";
+  } finally {
+    p.loading = false; p.fetchedAt = Date.now();
+    drawPanel(p);
+  }
+}
+
+const fmtCandleT = (tf, c) => {
+  if (tf === "1D") { const d = new Date(c.p * 86400e3); return d.toLocaleDateString([], { day: "numeric", month: "short", year: "2-digit", timeZone: "UTC" }); }
+  return new Date(c.t).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false });
+};
+
+function drawCandle(p) {
+  const { mkKey, key, y, m } = p.candle;
+  const spec = candleSpec(mkKey, key, y, m);
+  if (!spec) { p.svg.innerHTML = ""; return; }
+  const w = spec.def.w, legs = spec.legs;
+  const live = legs.every(Boolean) ? combo(spec.mk, legs, w, "") : null;
+  p.title.innerHTML = `${spec.mk.key} · ${esc(spec.title)} · ${esc(spec.name)}<small>bp · ${p.tf} candles</small>`;
+  p.el.setAttribute("aria-label", `${spec.mk.key} ${spec.name} candle chart`);
+  p.sub.innerHTML = `${legs.map((l, i) => `${w[i] < 0 ? "−" : i ? "+" : ""}${Math.abs(w[i]) === 1 ? "" : Math.abs(w[i]) + "×"}${l ? l.code : "?"}`).join(" ")}` +
+    `<span class="grow"></span>live <b>${live && live.v != null ? fmt(live.v) : "—"}</b>` +
+    (live && live.chg != null ? ` <span class="${live.chg > 0 ? "up" : live.chg < 0 ? "down" : ""}">${fmt(live.chg, true)}</span>` : "");
+  for (const b of p.el.querySelectorAll(".tf button")) b.setAttribute("aria-pressed", String(b.dataset.tf === p.tf));
+  p.foot.textContent = `Candles built from each leg's ${CANDLE_TF[p.tf].foot} bars (QH); high / low are estimated from those bars. ` +
+                       `Scroll to zoom, drag to go back in time.`;
+
+  if (!p.raw && !p.err) { if (!p.loading) loadCandles(p, spec); return candleMsg(p, "Loading history…"); }
+  if (Date.now() - p.fetchedAt > 60000 && !p.loading) loadCandles(p, spec);   // refresh once a minute
+  if (p.err && !p.raw) return candleMsg(p, p.err);
+
+  let cs = buildCandles(p.raw, legs.map(l => l.code), w, spec.mk.bp, p.tf);
+  if (live && live.v != null) {                 // the last candle follows the live price
+    const now = Date.now(), pNow = periodOf(p.tf, now), lastC = cs[cs.length - 1];
+    if (lastC && lastC.p === pNow) cs[cs.length - 1] = { ...lastC, c: live.v, h: Math.max(lastC.h, live.v), l: Math.min(lastC.l, live.v), live: true };
+    else if (!lastC || pNow > lastC.p) cs = [...cs, { p: pNow, t: now, o: live.v, h: live.v, l: live.v, c: live.v, live: true }];
+  }
+  if (!cs.length) return candleMsg(p, "QH has no history for these contracts at this candle size.");
+
+  const W = p.plot.clientWidth, H = p.plot.clientHeight;
+  if (W < 80 || H < 60) return;
+  const M = { l: 10, r: 58, t: 10, b: 24 };
+  const pw = W - M.l - M.r, ph = H - M.t - M.b;
+  const total = cs.length;
+  const n = Math.max(10, Math.min(total, p.view.n || Math.floor(pw / 9)));
+  p.view.end = Math.min(p.view.end, Math.max(0, total - n));
+  const vis = cs.slice(Math.max(0, total - p.view.end - n), total - p.view.end);
+  const slot = pw / n, x0 = M.l + (n - vis.length) * slot;
+  let lo = Math.min(...vis.map(c => c.l)), hi = Math.max(...vis.map(c => c.h));
+  if (live && live.v != null && p.view.end === 0) { lo = Math.min(lo, live.v); hi = Math.max(hi, live.v); }
+  if (hi - lo < 1e-9) { lo -= 1; hi += 1; }
+  const pad = (hi - lo) * 0.06; lo -= pad; hi += pad;
+  const ticks = niceTicks(lo, hi, Math.max(3, Math.floor(ph / 50))).filter(t => t >= lo && t <= hi);
+  const Y = v => M.t + (hi - v) / (hi - lo) * ph;
+  const X = i => x0 + (i + 0.5) * slot;
+
+  let g = "";
+  for (const tv of ticks) {
+    g += `<line x1="${M.l}" x2="${W - M.r}" y1="${Y(tv)}" y2="${Y(tv)}" stroke="var(${tv === 0 ? "--axis" : "--grid"})"/>` +
+         `<text x="${W - M.r + 6}" y="${Y(tv) + 4}" font-size="11" fill="var(--tick)">${fmt(tv)}</text>`;
+  }
+  const every = Math.max(1, Math.ceil(90 / slot));
+  vis.forEach((c, i) => {
+    if ((vis.length - 1 - i) % every) return;
+    g += `<text x="${X(i)}" y="${H - 7}" text-anchor="middle" font-size="11" fill="var(--tick)">${fmtCandleT(p.tf, c)}</text>`;
+  });
+  if (p.hoverI != null && vis[p.hoverI]) g += `<line x1="${X(p.hoverI)}" x2="${X(p.hoverI)}" y1="${M.t}" y2="${H - M.b}" stroke="var(--axis)"/>`;
+  const bw = Math.max(1, Math.min(14, slot * 0.7));
+  vis.forEach((c, i) => {
+    const up = c.c >= c.o, col = `rgb(var(${up ? "--up" : "--down"}))`;
+    const yt = Y(Math.max(c.o, c.c)), yb = Y(Math.min(c.o, c.c));
+    g += `<line x1="${X(i)}" x2="${X(i)}" y1="${Y(c.h)}" y2="${Y(c.l)}" stroke="${col}" stroke-width="1"/>` +
+         `<rect x="${X(i) - bw / 2}" y="${yt}" width="${bw}" height="${Math.max(1, yb - yt)}" fill="${col}"${c.live ? ' fill-opacity="0.75"' : ""}/>`;
+  });
+  if (live && live.v != null) {
+    const yl = Y(live.v);
+    if (yl >= M.t && yl <= H - M.b) {
+      g += `<line x1="${M.l}" x2="${W - M.r}" y1="${yl}" y2="${yl}" stroke="var(--s1)" stroke-dasharray="4 3"/>` +
+           `<rect x="${W - M.r + 1}" y="${yl - 9}" width="${M.r - 3}" height="18" rx="3" fill="var(--s1)"/>` +
+           `<text x="${W - M.r + 6}" y="${yl + 4}" font-size="11" font-weight="600" fill="#fff">${fmt(live.v)}</text>`;
+    }
+  }
+  if (p.err) g += `<text x="${M.l + 4}" y="${M.t + 12}" font-size="11" fill="var(--bad)">${esc(p.err)}</text>`;
+  p.svg.innerHTML = g;
+  p.svg.setAttribute("aria-label", `${spec.mk.key} ${spec.name}: ${vis.length} ${p.tf} candles, last ${fmt(vis[vis.length - 1].c)} bp`);
+  p.geom = { vis, slot, x0, n, total };
+  updateCandleTip(p);
+}
+
+function candleMsg(p, text) {
+  const W = p.plot.clientWidth, H = p.plot.clientHeight;
+  const lines = [];
+  for (const word of String(text).split(" ")) {   // wrap long messages
+    if (lines.length && (lines[lines.length - 1] + " " + word).length < Math.max(30, W / 7)) lines[lines.length - 1] += " " + word;
+    else lines.push(word);
+  }
+  p.svg.innerHTML = lines.map((l, i) =>
+    `<text x="${W / 2}" y="${H / 2 + (i - (lines.length - 1) / 2) * 16}" text-anchor="middle" font-size="12" fill="var(${p.err ? "--bad" : "--muted"})">${esc(l)}</text>`).join("");
+  p.geom = null; p.tip.style.display = "none";
+}
+
+function updateCandleTip(p) {
+  const G = p.geom, tip = p.tip;
+  const c = G && p.hoverI != null && G.vis[p.hoverI];
+  if (!c || !p.mouse) { tip.style.display = "none"; return; }
+  tip.innerHTML = `<b>${fmtCandleT(p.tf, c)}${c.live ? " · live" : ""}</b>` +
+    [["Open", c.o], ["High", c.h], ["Low", c.l], ["Close", c.c]].map(([k, v]) => `<div class="r"><span>${k}</span><span>${fmt(v)}</span></div>`).join("") +
+    `<div class="r"><span>Change</span><span>${fmt(r4(c.c - c.o), true)}</span></div>`;
+  tip.style.display = "block";
+  const [mx, my] = p.mouse, tw = tip.offsetWidth, th = tip.offsetHeight;
+  tip.style.left = `${mx + 14 + tw > p.plot.clientWidth ? mx - 14 - tw : mx + 14}px`;
+  tip.style.top = `${Math.max(0, Math.min(my - th / 2, p.plot.clientHeight - th))}px`;
+}
 
 // ======================= curve simulator =======================
 // The simulated curve is each market's chain of 3M spreads, with the first contract held at its live price.
@@ -766,6 +1273,12 @@ const SIM_KINDS = {
   sp: { offs: [0, 3], w: [1, -1], label: "3M spreads", struct: "sp3", what: "3M spread" },
   f3: { offs: [0, 3, 6], w: [1, -2, 1], label: "3M flies (3MF)", struct: "fly3", what: "3MF" },
   f6: { offs: [0, 6, 12], w: [1, -2, 1], label: "6M flies (6MF)", struct: "fly6", what: "6MF" },
+};
+// built-in input kinds plus one per custom strategy (kind = its key)
+const simKinds = () => {
+  const o = { ...SIM_KINDS };
+  for (const c of CUSTOM) { const st = STRUCT[c.key]; o[c.key] = { offs: st.offs, w: st.w, label: c.name, struct: c.key, what: c.name }; }
+  return o;
 };
 const fkey = (y, m) => `${y}-${m}`;
 const blockOf = (y, m) => (m === 12 ? y : y - 1);   // Dec(y), Mar/Jun/Sep(y+1) belong to the Dec(y)–Dec(y+1) block
@@ -806,8 +1319,9 @@ function simModel(mk) {
 
   // A structure Σ w_j·P(front + offs_j) in bp is Σ_i c_i·s_i over the 3M spreads s_i from the front,
   // with c_i = −(sum of the weights of the legs after spread i). null if a spread is missing.
+  const KINDS = simKinds();
   const rowOf = id => {
-    const [kind, key] = id.split("|"), K = SIM_KINDS[kind];
+    const [kind, key] = id.split("|"), K = KINDS[kind];
     if (!K) return null;
     const [y, m] = frontOf(kind, key), q = K.offs.map(o => o / 3), row = [];
     for (let i = 0; i < Math.max(...q); i++) {
@@ -884,7 +1398,9 @@ function simMarket(mk, model) {
 
 // name of an input, e.g. "3MF JSD27 (Jun27 / Sep27 / Dec27)"
 function simName(kind, key) {
-  const [y, m] = frontOf(kind, key), K = SIM_KINDS[kind];
+  const K = simKinds()[kind];
+  if (!K) return id;
+  const [y, m] = frontOf(kind, key);
   const legs = K.offs.map(o => lab(...ymAdd(y, m, o))).join(" / ");
   return kind === "dd" ? `Dec${yy2(y)}–Dec${yy2(y + 1)}` : `${K.what} ${STRUCT[K.struct].name(y, m)}${yy2(y)} (${legs})`;
 }
@@ -899,9 +1415,10 @@ function simInputsHtml(mk, model) {
           model.blocks.map(y => `<th>Dec${yy2(y)}–Dec${yy2(y + 1)}</th>`).join("") + `</tr></thead><tbody>`;
   h += `<tr class="dd"><th class="fly" title="Dec − Dec of the next year = sum of the four 3M spreads">Dec–Dec</th>` +
        model.blocks.map(y => `<td>${simInput(mk.key, "dd", y, model.valOf(`dd|${y}`))}</td>`).join("") + `</tr>`;
-  for (const kind of ["sp", "f3", "f6"]) {
-    const K = SIM_KINDS[kind];
-    h += `<tr class="grp"><th colspan="${cols}">${K.label}</th></tr>`;
+  const KINDS = simKinds();
+  for (const kind of ["sp", "f3", "f6", ...customKeys()]) {
+    const K = KINDS[kind];
+    h += `<tr class="grp"><th colspan="${cols}">${esc(K.label)}${STRUCT[K.struct].custom ? ` <span class="meta">· your strategy · e.g. ${formulaOf(K.offs, K.w)}</span>` : ""}</th></tr>`;
     for (const [dy, m] of SIM_ROWS) {
       h += `<tr><th class="fly">${STRUCT[K.struct].name(2000, m)}</th>` + model.blocks.map(y => {
         const key = fkey(y + dy, m);
@@ -955,7 +1472,7 @@ function renderSim() {
   const mk = SIM.live.find(m => m.key === SIM.mk), model = mk && SIM.models[mk.key];
   document.getElementById("simReset").textContent = `Reset ${SIM.mk || ""} to live`;
   document.getElementById("simReset").disabled = !nInputs(SIM.mk);
-  const sig = model ? JSON.stringify([mk.key, model.blocks, model.sp.map(s => s.key)]) : `err-${SIM.mk}`;
+  const sig = model ? JSON.stringify([mk.key, model.blocks, model.sp.map(s => s.key), CUSTOM]) : `err-${SIM.mk}`;
   if (host.dataset.sig !== sig) {
     host.innerHTML = model ? simInputsHtml(mk, model)
       : `<p class="note">${mk ? `${mk.key}: ${mk.error || "no live contracts"}` : "No markets"}</p>`;
@@ -967,18 +1484,32 @@ function renderSim() {
   TIP_REF = "live";
   try {
     renderStrip("sim-cal1y", [0, 12], [1, -1], 2, f => `${letter(f.m)}${yy2(f.y)}`, SIM.markets, "level");
-    for (const k of ["sp6", "sp3", "fly3", "fly6", "cust"]) {
+    syncSimTables();
+    for (const k of ["sp6", "sp3", "fly3", "fly6", "cust", ...customKeys()]) {
       const st = STRUCT[k];
       renderStrip(`sim-${k}`, st.offs, st.w, st.floor, f => `${st.name(f.y, f.m)}${yy2(f.y)}`, SIM.markets, "level");
     }
   } finally { TIP_REF = "settle"; }
-  if (!SIM_PANELS.length) initSimCharts();
+  syncSimCharts();
   SIM_PANELS.forEach(drawPanel);
 }
 
-function initSimCharts() {
+function syncSimTables() {
+  const host = document.getElementById("simCustomTables");
+  const sig = JSON.stringify(CUSTOM);
+  if (host.dataset.sig === sig) return;
+  host.innerHTML = CUSTOM.map(c => `<h3 class="meta" style="margin:14px 0 6px">${esc(c.name)} (your strategy)</h3>` +
+                                   `<div class="scroll"><table id="sim-${c.key}"></table></div>`).join("");
+  host.dataset.sig = sig;
+}
+
+// one chart per structure, custom strategies included; added / removed as strategies change
+function syncSimCharts() {
   const host = document.getElementById("simCharts");
-  for (const key of SIM_CHART_KEYS) {
+  const keys = [...SIM_CHART_KEYS, ...customKeys()];
+  for (const p of [...SIM_PANELS]) if (!keys.includes(p.key)) { p.ro.disconnect(); p.el.remove(); SIM_PANELS.splice(SIM_PANELS.indexOf(p), 1); }
+  for (const key of keys) {
+    if (SIM_PANELS.some(p => p.key === key)) continue;
     const el = document.createElement("div");
     el.className = "sp-card";
     el.innerHTML = `<div class="cp-title"></div><div class="cp-legend"></div>` +
@@ -1043,23 +1574,339 @@ function applySimInput(el) {
   });
 })();
 
+// ======================= strategy builder =======================
+// A strategy is a combination of named structures, each with a multiplier and a start (months after the front):
+// e.g. 1Y fly − 2×6MF = [{ b: "f12", mult: 1, start: 0 }, { b: "f6", mult: -2, start: 0 }]. It is resolved into legs
+// ({ off: months from the front, w }) which is all the rest of the page uses.
+const BLOCKS = [];
+for (const [t, nm] of [[3, "3M"], [6, "6M"], [9, "9M"], [12, "1Y"], [24, "2Y"]]) {
+  BLOCKS.push({ id: `s${t}`, group: "Spreads", name: `${nm} spread`, offs: [0, t], w: [1, -1] });
+}
+for (const [t, nm] of [[3, "3MF"], [6, "6MF"], [9, "9MF"], [12, "1Y fly"], [24, "2Y fly"]]) {
+  BLOCKS.push({ id: `f${t}`, group: "Flies", name: nm, offs: [0, t, 2 * t], w: [1, -2, 1] });
+}
+for (const [t, nm] of [[3, "3M"], [6, "6M"], [12, "1Y"]]) {
+  BLOCKS.push({ id: `c${t}`, group: "Condors", name: `${nm} condor`, offs: [0, t, 2 * t, 3 * t], w: [1, -1, -1, 1] });
+}
+for (const [t, nm] of [[3, "3M"], [6, "6M"], [12, "1Y"]]) {
+  BLOCKS.push({ id: `d${t}`, group: "Double flies", name: `${nm} double fly`, offs: [0, t, 2 * t, 3 * t], w: [1, -3, 3, -1] });
+}
+const P = (b, mult = 1, start = 0) => ({ b, mult, start });
+const B_QUICK = [
+  ["1Y fly − 2×6MF", [P("f12"), P("f6", -2)]],
+  ["2Y fly − 2×1Y fly", [P("f24"), P("f12", -2)]],
+  ["6MF − 2×3MF", [P("f6"), P("f3", -2)]],
+  ["1Y fly", [P("f12")]], ["2Y fly", [P("f24")]], ["9MF", [P("f9")]],
+  ["3M condor", [P("c3")]], ["6M condor", [P("c6")]], ["1Y condor", [P("c12")]],
+  ["3M double fly", [P("d3")]], ["6M double fly", [P("d6")]], ["1Y double fly", [P("d12")]],
+  ["9M spread", [P("s9")]], ["2Y spread", [P("s24")]],
+];
+const B_MULTS = [4, 3, 2, 1, 0.5, -0.5, -1, -2, -3, -4];
+const B_STARTS = Array.from({ length: 13 }, (_, i) => i * 3);    // 0 … 36 months after the front
+
+// building blocks: the presets plus your saved strategies (not the one being edited)
+const blockById = id => BLOCKS.find(b => b.id === id) ||
+  (() => { const c = CUSTOM.find(x => x.key === id); return c ? { id, group: "Yours", name: c.name, offs: c.legs.map(l => l.off), w: c.legs.map(l => l.w) } : null; })();
+
+function resolveParts(parts) {
+  const acc = new Map();
+  for (const p of parts) {
+    const b = blockById(p.b);
+    if (!b) continue;
+    b.offs.forEach((o, j) => { const off = p.start + o; acc.set(off, (acc.get(off) || 0) + p.mult * b.w[j]); });
+  }
+  const legs = [...acc].map(([off, w]) => ({ off, w: r4(w) })).filter(l => Math.abs(l.w) > 1e-9).sort((a, b) => a.off - b.off);
+  const o0 = legs.length ? legs[0].off : 0;
+  legs.forEach(l => { l.off -= o0; });
+  return legs;
+}
+const multText = (m, first) => `${m < 0 ? (first ? "−" : " − ") : first ? "" : " + "}${Math.abs(m) === 1 ? "" : `${Math.abs(m)}×`}`;
+const partsName = parts => parts.map((p, i) => {
+  const b = blockById(p.b);
+  return `${multText(p.mult, !i)}${b ? b.name : "?"}${p.start ? ` (+${p.start}M)` : ""}`;
+}).join("");
+
+const B = { editing: null, parts: [], autoName: true };
+function bFresh() {
+  B.editing = null; B.parts = []; B.autoName = true;
+  document.getElementById("bName").value = "";
+}
+function bSetParts(parts, name) {
+  B.parts = parts.map(p => ({ ...p }));
+  if (name != null) { document.getElementById("bName").value = name; B.autoName = true; }
+  else if (B.autoName) document.getElementById("bName").value = partsName(B.parts);
+  renderBuilder();
+}
+
+function bCheck() {
+  const name = document.getElementById("bName").value.trim();
+  const legs = resolveParts(B.parts);
+  const errs = [];
+  if (!B.parts.length) errs.push("Pick a quick pick or add a structure.");
+  else if (legs.length < 2) errs.push("These structures cancel each other out; change a multiplier.");
+  if (B.parts.length && !name) errs.push("Give it a name.");
+  else if (name && CUSTOM.some(c => c.key !== B.editing && c.name.toLowerCase() === name.toLowerCase())) errs.push("You already have a strategy with that name.");
+  const same = legs.length >= 2 && CUSTOM.find(c => c.key !== B.editing && JSON.stringify(c.legs) === JSON.stringify(legs));
+  if (same) errs.push(`Same legs as your "${same.name}".`);
+  return { name, legs, errs, ok: !errs.length };
+}
+
+function renderBuilder() {
+  const editing = B.editing && CUSTOM.find(c => c.key === B.editing);
+  document.getElementById("bTitle").textContent = editing ? `Edit strategy · ${editing.name}` : "New strategy";
+  document.getElementById("bSave").textContent = editing ? "Save changes" : "Save strategy";
+  document.getElementById("bCancel").hidden = !editing;
+
+  const savedLegs = new Map(CUSTOM.map(c => [JSON.stringify(c.legs), c.name]));
+  document.getElementById("bQuick").innerHTML = B_QUICK.map(([n, parts], i) => {
+    const have = savedLegs.get(JSON.stringify(resolveParts(parts)));
+    return `<button class="chip${have ? " have" : ""}" data-q="${i}"${have ? ` title="Already saved as “${esc(have)}”"` : ""}>${have ? "✓ " : ""}${n}</button>`;
+  }).join("");
+
+  const blocks = [...BLOCKS, ...CUSTOM.filter(c => c.key !== B.editing).map(c => blockById(c.key))];
+  const groups = [...new Set(blocks.map(b => b.group))];
+  document.getElementById("bBlocks").innerHTML = groups.map(g =>
+    `<span class="chip-group"><span class="meta">${g}</span>` +
+    blocks.filter(b => b.group === g).map(b => `<button class="chip" data-add="${b.id}" title="Add ${esc(b.name)}: ${esc(legsText(b.offs, b.w))}">+ ${esc(b.name)}</button>`).join("") +
+    `</span>`).join("");
+
+  const multOpts = m => [...new Set([...B_MULTS, m])].sort((a, b) => b - a)
+    .map(x => `<option value="${x}"${x === m ? " selected" : ""}>${x > 0 ? "+" : "−"}${Math.abs(x)}×</option>`).join("");
+  const startOpts = s => B_STARTS.map(x => `<option value="${x}"${x === s ? " selected" : ""}>${x ? `${x}M later` : "same front"}</option>`).join("");
+  const blockOpts = id => groups.map(g => `<optgroup label="${g}">` +
+    blocks.filter(b => b.group === g).map(b => `<option value="${b.id}"${b.id === id ? " selected" : ""}>${esc(b.name)}</option>`).join("") + `</optgroup>`).join("");
+  document.getElementById("bParts").innerHTML = B.parts.length
+    ? `<thead><tr><th>×</th><th>Structure</th><th>Starts</th><th>Legs (on a Dec26 front)</th><th></th></tr></thead><tbody>` +
+      B.parts.map((p, i) => {
+        const b = blockById(p.b);
+        const offs = b ? b.offs.map(o => o + p.start) : [], w = b ? b.w.map(x => r4(x * p.mult)) : [];
+        return `<tr><td><select data-i="${i}" data-f="mult" aria-label="Multiplier">${multOpts(p.mult)}</select></td>` +
+               `<td><select data-i="${i}" data-f="b" aria-label="Structure">${blockOpts(p.b)}</select></td>` +
+               `<td><select data-i="${i}" data-f="start" aria-label="Starts">${startOpts(p.start)}</select></td>` +
+               `<td class="meta">${b ? esc(legsText(offs, w)) : "deleted strategy"}</td>` +
+               `<td><button class="cp-x" data-del="${i}" title="Remove" aria-label="Remove ${b ? esc(b.name) : "row"}">×</button></td></tr>`;
+      }).join("") + `</tbody>`
+    : "";
+  renderBList();
+  renderBuilderPreview();
+}
+
+function renderBuilderPreview() {
+  const c = bCheck(), prev = document.getElementById("bprev");
+  const errEl = document.getElementById("bErr");
+  errEl.classList.remove("ok");
+  errEl.textContent = B.parts.length ? c.errs.join(" ") : "";
+  document.getElementById("bSave").disabled = !c.ok;
+  if (c.legs.length < 2) {
+    document.getElementById("bFormula").textContent = "";
+    prev.innerHTML = ""; prev.dataset.sig = "";
+    return;
+  }
+  const offs = c.legs.map(l => l.off), w = c.legs.map(l => l.w);
+  document.getElementById("bFormula").textContent = `${partsName(B.parts)}   →   e.g. ${formulaOf(offs, w)}`;
+  if (data) renderStrip("bprev", offs, w, 1, f => `${legLetters(f.y, f.m, offs)}${yy2(f.y)}`, data.markets);
+}
+
+function renderBList() {
+  const host = document.getElementById("bList");
+  if (!CUSTOM.length) { host.innerHTML = `<p class="note" style="margin-top:0">None yet. Pick one above and press Save.</p>`; return; }
+  host.innerHTML = `<div class="scroll"><table class="b-list"><thead><tr><th>Name</th><th>Built from</th><th>Legs</th><th></th></tr></thead><tbody>` +
+    CUSTOM.map(c => {
+      const st = STRUCT[c.key];
+      return `<tr><th class="row">${esc(c.name)}</th><td>${esc(c.desc || "")}</td><td>${esc(formulaOf(st.offs, st.w))}</td>` +
+             `<td class="acts"><button class="btn" data-edit="${c.key}">Edit</button><button class="btn" data-delete="${c.key}">Delete</button></td></tr>`;
+    }).join("") + `</tbody></table></div>`;
+}
+
+// forget everything tied to a strategy: simulator inputs, open charts, hidden-column setting
+function purgeStrategy(key, keepDef) {
+  for (const st of Object.values(SIM.state)) if (st.inp) for (const id of Object.keys(st.inp)) if (id.startsWith(`${key}|`)) delete st.inp[id];
+  saveSim();
+  if (keepDef) return;
+  for (const p of PANELS.filter(p => p.key === key)) closePanel(p);
+  DL.hide = DL.hide.filter(k => k !== key); saveDL();
+}
+
+(() => {
+  bFresh();
+  document.getElementById("bQuick").addEventListener("click", e => {
+    const b = e.target.closest("button[data-q]");
+    if (!b) return;
+    const [n, parts] = B_QUICK[+b.dataset.q];
+    bSetParts(parts, n);
+  });
+  document.getElementById("bBlocks").addEventListener("click", e => {
+    const b = e.target.closest("button[data-add]");
+    if (!b) return;
+    // the first structure goes in at +1×, later ones at −1× (change it in the row)
+    bSetParts([...B.parts, P(b.dataset.add, B.parts.length ? -1 : 1)]);
+  });
+  const parts = document.getElementById("bParts");
+  parts.addEventListener("change", e => {
+    const i = e.target.dataset.i, f = e.target.dataset.f;
+    if (i == null) return;
+    B.parts[+i][f] = f === "b" ? e.target.value : +e.target.value;
+    bSetParts(B.parts);
+  });
+  parts.addEventListener("click", e => {
+    const b = e.target.closest("button[data-del]");
+    if (!b) return;
+    B.parts.splice(+b.dataset.del, 1);
+    bSetParts(B.parts);
+  });
+  const nameEl = document.getElementById("bName");
+  nameEl.addEventListener("input", () => { B.autoName = !nameEl.value.trim(); renderBuilderPreview(); });
+  nameEl.addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("bSave").click(); });
+  document.getElementById("bClear").addEventListener("click", () => { const ed = B.editing; bFresh(); B.editing = ed; renderBuilder(); });
+  document.getElementById("bSave").addEventListener("click", () => {
+    const c = bCheck();
+    if (!c.ok) return;
+    const desc = partsName(B.parts), parts = B.parts.map(p => ({ ...p }));
+    if (B.editing) {
+      const x = CUSTOM.find(s => s.key === B.editing);
+      if (JSON.stringify(x.legs) !== JSON.stringify(c.legs)) purgeStrategy(x.key, true);   // old simulator inputs no longer mean the same thing
+      Object.assign(x, { name: c.name, legs: c.legs, parts, desc });
+    } else {
+      CUSTOM.push({ key: "u" + Date.now().toString(36), name: c.name, legs: c.legs, parts, desc });
+    }
+    saveCustom();
+    bFresh(); renderBuilder();
+    document.getElementById("bErr").classList.add("ok");
+    document.getElementById("bErr").textContent = `Saved “${c.name}”: it's now in the Screener, Strips, charts and Curve simulator.`;
+  });
+  document.getElementById("bCancel").addEventListener("click", () => { bFresh(); renderBuilder(); });
+  document.getElementById("bList").addEventListener("click", e => {
+    const ed = e.target.closest("button[data-edit]"), del = e.target.closest("button[data-delete]");
+    if (ed) {
+      const c = CUSTOM.find(s => s.key === ed.dataset.edit);
+      B.editing = c.key;
+      bSetParts(c.parts || [], c.name);
+      B.autoName = false;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (del) {
+      const c = CUSTOM.find(s => s.key === del.dataset.delete);
+      if (!confirm(`Delete "${c.name}"? It disappears from every tab, along with any simulator inputs for it.`)) return;
+      purgeStrategy(c.key);
+      CUSTOM = CUSTOM.filter(s => s.key !== c.key);
+      saveCustom();
+      if (B.editing === c.key) bFresh();
+      renderBuilder();
+    }
+  });
+  renderBuilder();
+})();
+
 // ======================= tabs =======================
+// ======================= Percentiles (subscripts in the Screener) =======================
+// Where a strategy's live value sits among its own daily closes over the last N trading days. The closes are
+// built from the legs' QH daily closes (Σ w × close × bp); a leg with no trade that day keeps its previous close.
+const PCT_WINDOWS = [10, 30, 60, 120, 240, 560];
+const PCT_COUNT = 600;   // daily closes asked per contract: the longest window plus spare days
+const PCT_TTL = 600000;  // reload history after 10 minutes
+const PCT = { hist: {}, loading: {}, err: {} };
+
+async function loadPctHist(mk, force) {
+  const h = PCT.hist[mk.key];
+  if (PCT.loading[mk.key] || (!force && h && Date.now() - h.at < PCT_TTL) || (!force && !h && PCT.err[mk.key])) return;
+  PCT.loading[mk.key] = true; PCT.err[mk.key] = null;
+  try {
+    const r = await fetch(`/api/daily?codes=${encodeURIComponent(mk.legs.map(l => l.code).join(","))}&count=${PCT_COUNT}`, { cache: "no-store" });
+    const b = await r.json();
+    if (!r.ok || b.error) throw new Error(b.error || `HTTP ${r.status}`);
+    // trading days = every day any contract of this market has a close, up to yesterday (today's bar is still forming)
+    const now = new Date(), today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const closes = {}, days = new Set();
+    for (const [c, rows] of Object.entries(b.closes)) {
+      closes[c] = new Map(rows.filter(([t]) => t < today).map(([t, px]) => (days.add(t), [t, px])));
+    }
+    PCT.hist[mk.key] = { at: Date.now(), days: [...days].sort((a, b) => a - b), closes, series: {} };
+  } catch (e) {
+    PCT.err[mk.key] = e.message;
+  } finally {
+    PCT.loading[mk.key] = false;
+    refresh();
+  }
+}
+
+// a strategy's daily closes (bp, oldest first) plus each window's sorted closes, cached per history load
+function pctSeries(h, codes, w, bp) {
+  const key = `${codes.join(",")}|${w.join(",")}`;
+  if (h.series[key]) return h.series[key];
+  const maps = codes.map(c => h.closes[c] || new Map()), last = codes.map(() => null), vals = [];
+  for (const t of h.days) {
+    maps.forEach((m, i) => { const px = m.get(t); if (px != null) last[i] = px; });
+    if (last.some(x => x == null)) continue;   // a leg hadn't traded yet
+    vals.push(Math.round(last.reduce((s, px, i) => s + w[i] * px, 0) * bp * 1e4) / 1e4);
+  }
+  const win = {};
+  for (const N of PCT_WINDOWS) win[N] = vals.slice(-N).sort((a, b) => a - b);
+  return h.series[key] = { vals, win };
+}
+
+// percent of the window's closes below x (ties count half), by binary search on the sorted window
+function pctRank(sorted, x) {
+  let lo = 0, hi = sorted.length;
+  while (lo < hi) { const mid = (lo + hi) >> 1; if (sorted[mid] < x) lo = mid + 1; else hi = mid; }
+  let eq = lo; while (eq < sorted.length && sorted[eq] === x) eq++;
+  return 100 * (lo + (eq - lo) / 2) / sorted.length;
+}
+
+// Fill each Screener cell's subscript with the live value's percentile over the chosen window (DL.pct days)
+// and add every window to its tooltip. Cells: { id, r (combo result), mk, legs, w }.
+function paintPct(cells) {
+  for (const c of cells) {
+    const td = document.getElementById(c.id), sub = td && td.querySelector("sub.pc");
+    if (!sub) continue;
+    const v = c.r && c.r.v, h = c.mk && PCT.hist[c.mk.key];
+    let txt = "", cls = "pc";
+    if (DL.pct && v != null && h && c.legs.every(Boolean)) {
+      const s = pctSeries(h, c.legs.map(l => l.code), c.w, c.mk.bp);
+      const parts = [];
+      for (const N of PCT_WINDOWS) {
+        const win = s.win[N];
+        if (win.length < 2) continue;
+        const p = pctRank(win, v);
+        parts.push(`${N}d ${p.toFixed(0)}${win.length < N ? ` (${win.length} days)` : ""}`);
+        if (N === DL.pct) {
+          txt = p.toFixed(0);
+          if (win.length < N) cls += " thin";
+          if (p <= 10) cls += " lo"; else if (p >= 90) cls += " hi";
+        }
+      }
+      if (parts.length) td.title += `\nPercentile vs daily closes: ${parts.join(" · ")}`;
+    }
+    sub.textContent = txt;
+    sub.className = cls;
+  }
+}
+
+function renderPctStatus() {
+  const busy = Object.keys(PCT.loading).filter(k => PCT.loading[k]);
+  const errs = Object.entries(PCT.err).filter(([, e]) => e);
+  const st = document.getElementById("pctStatus");
+  st.textContent = !DL.pct ? "" : busy.length ? `Loading history: ${busy.join(", ")}…`
+    : errs.length ? `Percentiles unavailable · ${errs.map(([k, e]) => `${k}: ${e}`).join(" · ")}` : "";
+  st.style.color = errs.length && !busy.length ? "var(--bad)" : "";
+}
+
+const TABS = ["screen", "strips", "sim", "build"];
 let TAB = "screen";
-try { TAB = localStorage.getItem("imTab") === "sim" ? "sim" : "screen"; } catch (e) {}
+try { const t = localStorage.getItem("imTab"); if (TABS.includes(t)) TAB = t; } catch (e) {}
 function refresh() {
   if (!data) return;
-  if (TAB === "sim") renderSim(); else { render(); drawCharts(); }
+  if (TAB === "sim") renderSim();
+  else if (TAB === "build") renderBuilderPreview();
+  else { if (TAB === "strips") renderStrips(); else renderDec(); drawCharts(); }
 }
 function setTab(t) {
   TAB = t;
   document.body.dataset.tab = t;
-  for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === t));
-  document.getElementById("tab-screen").hidden = t !== "screen";
-  document.getElementById("tab-sim").hidden = t !== "sim";
+  for (const b of document.querySelectorAll("#mainTabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === t));
+  for (const x of TABS) document.getElementById(`tab-${x}`).hidden = t !== x;
   try { localStorage.setItem("imTab", t); } catch (e) {}
   refresh();
 }
-document.querySelector(".tabs").addEventListener("click", e => {
+document.getElementById("mainTabs").addEventListener("click", e => {
   const b = e.target.closest("button[data-tab]");
   if (b) setTab(b.dataset.tab);
 });
